@@ -11,10 +11,8 @@ import se.llbit.util.TaskTracker;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-public class AnimationManager extends Thread {
+public class AnimationManager {
     @FunctionalInterface
     public interface AnimationTask {
         boolean apply(Scene scene);
@@ -28,7 +26,6 @@ public class AnimationManager extends Thread {
     private Label progressLabel = null;
 
     private final LinkedList<AnimationTask> animationFrames = new LinkedList<>();
-    private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     public void setChunky(Chunky chunky) {
         this.chunky = chunky;
@@ -53,27 +50,22 @@ public class AnimationManager extends Thread {
 
     public void frameComplete() {
         if (animating) {
-            executor.schedule(this::postFrame, 1, TimeUnit.SECONDS);
-        }
-    }
+            chunky.getSceneManager().getScene().pauseRender();
+            saveFrame(this.frameCount);
+            this.frameCount++;
 
-    public void postFrame() {
-        chunky.getSceneManager().getScene().pauseRender();
-        saveFrame(this.frameCount);
-        this.frameCount++;
-
-        if (progressLabel != null) {
-            Platform.runLater(
-                () -> progressLabel.setText(String.format("Frame %d / %d", this.frameCount, this.totalFrames))
-            );
+            if (progressLabel != null) {
+                Platform.runLater(() -> progressLabel.setText(String.format("Frame %d / %d", frameCount, totalFrames)));
+            }
+            runUntilRender();
         }
-        runUntilRender();
     }
 
     public void startAnimation() {
         this.animating = true;
         this.totalFrames = animationFrames.size();
-        executor.execute(this::runUntilRender);
+        Platform.runLater(() -> progressLabel.setText(String.format("Frame 0 / %d", this.totalFrames)));
+        runUntilRender();
     }
 
     public void stopAnimation() {
@@ -84,8 +76,8 @@ public class AnimationManager extends Thread {
     public void runUntilRender() {
         Scene scene = chunky.getSceneManager().getScene();
         synchronized (scene) {
+            scene.haltRender();
             scene.forceReset();
-            scene.spp = 0;
             AnimationTask task;
             while ((task = animationFrames.pollFirst()) != null) {
                 if (task.apply(scene)) {
