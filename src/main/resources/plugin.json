@@ -1,0 +1,8 @@
+{
+    "name": "ChunkyAnimation",
+    "author": "alexhliu",
+    "main": "chunkyanimate.ChunkyAnimate",
+    "version": "0.1",
+    "targetVersion": "2.4.0",
+    "description": "Chunky animations."
+}
