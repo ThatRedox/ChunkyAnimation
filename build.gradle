@@ -20,6 +20,7 @@ dependencies {
     provided 'se.llbit:chunky-core:2.4.0-SNAPSHOT'
     provided 'org.apache.commons:commons-math3:3.2'
     provided 'it.unimi.dsi:fastutil:8.4.4'
+    compile 'com.google.code.gson:gson:2.8.5'
 }
 
 jar {
