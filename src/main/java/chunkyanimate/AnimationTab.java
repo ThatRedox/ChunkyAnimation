@@ -17,10 +17,6 @@ public class AnimationTab implements RenderControlsTab {
         testButton.setOnAction(e -> manager.sunCycle());
         box.getChildren().add(testButton);
 
-        Button cameraDescendButton = new Button("Camera Descend");
-        cameraDescendButton.setOnAction(e -> manager.cameraDescend());
-        box.getChildren().add(cameraDescendButton);
-
         Button startAnimationButton = new Button("Start Animation");
         startAnimationButton.setOnAction(e -> manager.startAnimation());
         box.getChildren().add(startAnimationButton);

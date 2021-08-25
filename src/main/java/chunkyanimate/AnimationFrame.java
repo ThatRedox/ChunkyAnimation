@@ -1,114 +1,115 @@
 package chunkyanimate;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.json.JsonObject;
 import se.llbit.math.Vector3;
 
-import java.util.ArrayList;
-
 public class AnimationFrame {
-  public static final Gson parser = new GsonBuilder().setPrettyPrinting().create();
+    public double fogDensity;
+    public double skyFogDensity;
+    public Vector3 fogColor = new Vector3();
 
-  public Double fogDensity;
-  public Double skyFogDensity;
-  public Vector3 fogColor = new Vector3();
+    public boolean waterWorldEnabled;
+    public double waterWorldHeight;
 
-  public Boolean waterWorldEnabled;
-  public Double waterWorldHeight;
+    public Vector3 cameraPosition = new Vector3();
+    public Vector3 cameraOrientation = new Vector3();
+    public double cameraFov;
+    public double cameraDof;
+    public double cameraFocus;
 
-  public Vector3 cameraPosition = new Vector3();
-  public Vector3 cameraOrientation = new Vector3();
-  public Double cameraFov;
-  public Double cameraDof;
-  public Double cameraFocus;
+    public double sunAltitude;
+    public double sunAzimuth;
+    public double sunIntensity;
+    public Vector3 sunColor = new Vector3();
+    public boolean sunDraw;
 
-  public Double sunAltitude;
-  public Double sunAzimuth;
-  public Double sunIntensity;
-  public Vector3 sunColor = new Vector3();
-  public Boolean sunDraw;
+    public double animationTime;
 
-  public Double animationTime;
+    public AnimationFrame(Scene scene) {
+        this.fogDensity = scene.getFogDensity();
+        this.skyFogDensity = scene.getSkyFogDensity();
+        this.fogColor.set(scene.getFogColor());
 
-  private AnimationFrame() {}
+        this.waterWorldEnabled = scene.isWaterPlaneEnabled();
+        this.waterWorldHeight = scene.getWaterPlaneHeight();
 
-  public static AnimationFrame create(Scene scene, AnimationFrame previousFrame, String json) {
-    AnimationFrame ret = parser.fromJson(json, AnimationFrame.class);
-    return ret.fillMissing(previousFrame).fillMissing(scene);
-  }
+        this.cameraPosition.set(scene.camera().getPosition());
+        this.cameraOrientation.set(scene.camera().getYaw(), scene.camera().getPitch(), scene.camera().getRoll());
+        this.cameraFov = scene.camera().getFov();
+        this.cameraDof = scene.camera().getDof();
+        this.cameraFocus = scene.camera().getSubjectDistance();
 
-  public String toJson() {
-    return parser.toJson(this);
-  }
+        this.sunAltitude = scene.sun().getAltitude();
+        this.sunAzimuth = scene.sun().getAzimuth();
+        this.sunIntensity = scene.sun().getIntensity();
+        this.sunColor.set(scene.sun().getColor());
+        this.sunDraw = scene.sun().drawTexture();
 
-  public static ArrayList<AnimationFrame> loadAnimation(Scene scene, String file) {
-    JsonArray arr = new JsonParser().parse(file).getAsJsonArray();
-    ArrayList<AnimationFrame> ret = new ArrayList<>(arr.size());
-    AnimationFrame prev = null;
-    for (JsonElement el : arr)
-      ret.add(prev = create(scene, prev, el.toString()));
-    return ret;
-  }
+        this.animationTime = scene.getAnimationTime();
+    }
 
-  public void forceFeedTheseSettingsIntoASceneObject(Scene scene) {
-    scene.setFogDensity(this.fogDensity);
-    scene.setSkyFogDensity(this.skyFogDensity);
-    scene.setFogColor(this.fogColor);
-    scene.setWaterPlaneEnabled(this.waterWorldEnabled);
-    scene.setWaterPlaneHeight(this.waterWorldHeight);
-    scene.camera().setView(this.cameraOrientation.z, this.cameraOrientation.x, this.cameraOrientation.y);
-    scene.camera().setFoV(this.cameraFov);
-    scene.camera().setDof(this.cameraDof);
-    scene.camera().setSubjectDistance(this.cameraFocus);
-    scene.sun().setAltitude(this.sunAltitude);
-    scene.sun().setAzimuth(this.sunAzimuth);
-    scene.sun().setIntensity(this.sunIntensity);
-    scene.sun().setColor(this.sunColor);
-    scene.sun().setDrawTexture(this.sunDraw);
-    scene.setAnimationTime(this.animationTime);
-  }
+    public AnimationFrame(JsonObject json, AnimationFrame prev) {
+        this.fogDensity = json.get("fogDensity").asDouble(prev.fogDensity);
+        this.skyFogDensity = json.get("skyFogDensity").asDouble(prev.skyFogDensity);
+        this.fogColor.set(
+                json.get("fogColor").asObject().get("red").asDouble(prev.fogColor.x),
+                json.get("fogColor").asObject().get("green").asDouble(prev.fogColor.y),
+                json.get("fogColor").asObject().get("blue").asDouble(prev.fogColor.z)
+        );
 
-  private AnimationFrame fillMissing(AnimationFrame other) {
-    if (other == null) return this;
-    if (this.fogDensity==null) this.fogDensity = other.fogDensity;
-    if (this.skyFogDensity==null) this.skyFogDensity = other.skyFogDensity;
-    if (this.fogColor==null) this.fogColor = other.fogColor;
-    if (this.waterWorldEnabled==null) this.waterWorldEnabled = other.waterWorldEnabled;
-    if (this.waterWorldHeight==null) this.waterWorldHeight = other.waterWorldHeight;
-    if (this.cameraPosition==null) this.cameraPosition = other.cameraPosition;
-    if (this.cameraOrientation==null) this.cameraOrientation = other.cameraOrientation;
-    if (this.cameraFov==null) this.cameraFov = other.cameraFov;
-    if (this.cameraDof==null) this.cameraDof = other.cameraDof;
-    if (this.cameraFocus==null) this.cameraFocus = other.cameraFocus;
-    if (this.sunAltitude==null) this.sunAltitude = other.sunAltitude;
-    if (this.sunAzimuth==null) this.sunAzimuth = other.sunAzimuth;
-    if (this.sunIntensity==null) this.sunIntensity = other.sunIntensity;
-    if (this.sunColor==null) this.sunColor = other.sunColor;
-    if (this.sunDraw==null) this.sunDraw = other.sunDraw;
-    if (this.animationTime==null) this.animationTime = other.animationTime;
-    return this;
-  }
-  private AnimationFrame fillMissing(Scene scene) {
-    if (this.fogDensity==null) this.fogDensity = scene.getFogDensity();
-    if (this.skyFogDensity==null) this.skyFogDensity = scene.getSkyFogDensity();
-    if (this.fogColor==null) this.fogColor = scene.getFogColor();
-    if (this.waterWorldEnabled==null) this.waterWorldEnabled = scene.isWaterPlaneEnabled();
-    if (this.waterWorldHeight==null) this.waterWorldHeight = scene.getWaterPlaneHeight();
-    if (this.cameraPosition==null) this.cameraPosition = scene.camera().getPosition();
-    if (this.cameraOrientation==null) this.cameraOrientation = new Vector3(scene.camera().getPitch(),scene.camera().getRoll(),scene.camera().getYaw());
-    if (this.cameraFov==null) this.cameraFov = scene.camera().getFov();
-    if (this.cameraDof==null) this.cameraDof = scene.camera().getDof();
-    if (this.cameraFocus==null) this.cameraFocus = scene.camera().getSubjectDistance();
-    if (this.sunAltitude==null) this.sunAltitude = scene.sun().getAltitude();
-    if (this.sunAzimuth==null) this.sunAzimuth = scene.sun().getAzimuth();
-    if (this.sunIntensity==null) this.sunIntensity = scene.sun().getIntensity();
-    if (this.sunColor==null) this.sunColor = scene.sun().getColor();
-    if (this.sunDraw==null) this.sunDraw = scene.sun().drawTexture();
-    if (this.animationTime==null) this.animationTime = scene.getAnimationTime();
-    return this;
-  }
+        this.waterWorldEnabled = json.get("waterWorldEnabled").asBoolean(prev.waterWorldEnabled);
+        this.waterWorldHeight = json.get("waterWorldHeight").asDouble(prev.waterWorldHeight);
+
+        JsonObject jsonCamera = json.get("camera").asObject();
+        this.cameraPosition.set(
+                jsonCamera.get("position").asObject().get("x").asDouble(prev.cameraPosition.x),
+                jsonCamera.get("position").asObject().get("y").asDouble(prev.cameraPosition.y),
+                jsonCamera.get("position").asObject().get("z").asDouble(prev.cameraPosition.z)
+        );
+        this.cameraOrientation.set(
+                jsonCamera.get("orientation").asObject().get("roll").asDouble(prev.cameraOrientation.x),
+                jsonCamera.get("orientation").asObject().get("pitch").asDouble(prev.cameraOrientation.y),
+                jsonCamera.get("orientation").asObject().get("yaw").asDouble(prev.cameraOrientation.z)
+        );
+        this.cameraFov = jsonCamera.get("fov").asDouble(prev.cameraFov);
+        this.cameraDof = jsonCamera.get("dof").asDouble(prev.cameraDof);
+        this.cameraFocus = jsonCamera.get("focalOffset").asDouble(prev.cameraFocus);
+
+        JsonObject jsonSun = json.get("sun").asObject();
+        this.sunAltitude = jsonSun.get("altitude").asDouble(prev.sunAltitude);
+        this.sunAzimuth = jsonSun.get("azimuth").asDouble(prev.sunAzimuth);
+        this.sunIntensity = jsonSun.get("intensity").asDouble(prev.sunIntensity);
+        this.sunColor.set(
+                jsonSun.get("color").asObject().get("red").asDouble(prev.sunColor.x),
+                jsonSun.get("color").asObject().get("green").asDouble(prev.sunColor.y),
+                jsonSun.get("color").asObject().get("blue").asDouble(prev.sunColor.z)
+        );
+        this.sunDraw = jsonSun.get("drawTexture").asBoolean(prev.sunDraw);
+
+        this.animationTime = json.get("animationTime").asDouble(prev.animationTime);
+    }
+
+    public void apply(Scene scene) {
+        scene.setFogDensity(this.fogDensity);
+        scene.setSkyFogDensity(this.skyFogDensity);
+        scene.setFogColor(this.fogColor);
+
+        scene.setWaterPlaneEnabled(this.waterWorldEnabled);
+        scene.setWaterPlaneHeight(this.waterWorldHeight);
+
+        scene.camera().setPosition(this.cameraPosition);
+        scene.camera().setView(this.cameraOrientation.x, this.cameraOrientation.y, this.cameraOrientation.z);
+        scene.camera().setFoV(this.cameraFov);
+        scene.camera().setDof(this.cameraDof);
+        scene.camera().setSubjectDistance(this.cameraFocus);
+
+        scene.sun().setAltitude(this.sunAltitude);
+        scene.sun().setAzimuth(this.sunAzimuth);
+        scene.sun().setIntensity(this.sunIntensity);
+        scene.sun().setColor(this.sunColor);
+        scene.sun().setDrawTexture(this.sunDraw);
+
+        scene.setAnimationTime(this.animationTime);
+    }
 }
