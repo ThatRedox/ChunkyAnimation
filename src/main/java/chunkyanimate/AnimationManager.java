@@ -8,9 +8,7 @@ import se.llbit.json.JsonParser;
 import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayDeque;
 
 public class AnimationManager {
@@ -58,15 +56,19 @@ public class AnimationManager {
         scene.saveFrame(saveFile, TaskTracker.NONE, chunky.getRenderController().getContext().numRenderThreads());
     }
 
+    public void updateLabel() {
+        if (progressLabel != null) {
+            Platform.runLater(() -> progressLabel.setText(String.format("Frame %d / %d", frameCount, totalFrames)));
+        }
+    }
+
     public void frameComplete() {
         if (animating) {
             chunky.getSceneManager().getScene().pauseRender();
             saveFrame(this.frameCount);
             this.frameCount++;
 
-            if (progressLabel != null) {
-                Platform.runLater(() -> progressLabel.setText(String.format("Frame %d / %d", frameCount, totalFrames)));
-            }
+            updateLabel();
             runUntilRender();
         }
     }
@@ -74,7 +76,7 @@ public class AnimationManager {
     public void startAnimation() {
         this.animating = true;
         this.totalFrames = animationFrames.size();
-        Platform.runLater(() -> progressLabel.setText(String.format("Frame 0 / %d", this.totalFrames)));
+        updateLabel();
         runUntilRender();
     }
 
@@ -98,6 +100,32 @@ public class AnimationManager {
         }
 
         this.animating = false;
+    }
+
+    public void fromFolder(File folder) {
+        if (folder == null) return;
+
+        animating = false;
+        frameCount = 0;
+        animationFrames.clear();
+
+        Scene scene = chunky.getSceneManager().getScene();
+        AnimationFrame frame = new AnimationFrame(scene);
+
+        for (File file : folder.listFiles()) {
+            if (file.getName().endsWith(".json")) {
+                try (FileInputStream inStream = new FileInputStream(file)){
+                    JsonParser parser = new JsonParser(inStream);
+                    frame = new AnimationFrame(parser.parse().asObject(), frame);
+                    animationFrames.add(frame);
+                } catch (JsonParser.SyntaxError | IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        this.totalFrames = animationFrames.size();
+        updateLabel();
     }
 
     public void sunCycle() {

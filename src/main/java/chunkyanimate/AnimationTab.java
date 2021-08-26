@@ -4,8 +4,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.render.RenderControlsTab;
+
+import java.io.File;
 
 public class AnimationTab implements RenderControlsTab {
     private final VBox box;
@@ -16,6 +19,14 @@ public class AnimationTab implements RenderControlsTab {
         Button testButton = new Button("Sun cycle");
         testButton.setOnAction(e -> manager.sunCycle());
         box.getChildren().add(testButton);
+
+        DirectoryChooser chooser = new DirectoryChooser();
+        Button directoryButton = new Button("Choose a Folder");
+        directoryButton.setOnAction(e -> {
+            File dir = chooser.showDialog(box.getScene().getWindow());
+            manager.fromFolder(dir);
+        });
+        box.getChildren().add(directoryButton);
 
         Button startAnimationButton = new Button("Start Animation");
         startAnimationButton.setOnAction(e -> manager.startAnimation());
