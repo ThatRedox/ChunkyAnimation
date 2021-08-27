@@ -24,6 +24,9 @@ public class AnimationFrame {
     public Vector3 sunColor = new Vector3();
     public boolean sunDraw;
 
+    public boolean cloudsEnabled;
+    public Vector3 cloudOffset = new Vector3();
+
     public double animationTime;
 
     public AnimationFrame(Scene scene) {
@@ -45,6 +48,13 @@ public class AnimationFrame {
         this.sunIntensity = scene.sun().getIntensity();
         this.sunColor.set(scene.sun().getColor());
         this.sunDraw = scene.sun().drawTexture();
+
+        this.cloudsEnabled = scene.sky().cloudsEnabled();
+        this.cloudOffset.set(
+                scene.sky().cloudXOffset(),
+                scene.sky().cloudYOffset(),
+                scene.sky().cloudZOffset()
+        );
 
         this.animationTime = scene.getAnimationTime();
     }
@@ -87,6 +97,14 @@ public class AnimationFrame {
         );
         this.sunDraw = jsonSun.get("drawTexture").asBoolean(prev.sunDraw);
 
+        JsonObject jsonSky = json.get("sky").asObject();
+        this.cloudsEnabled = jsonSky.get("cloudsEnabled").asBoolean(prev.cloudsEnabled);
+        this.cloudOffset.set(
+                jsonSky.get("cloudOffset").asObject().get("x").asDouble(prev.cloudOffset.x),
+                jsonSky.get("cloudOffset").asObject().get("y").asDouble(prev.cloudOffset.y),
+                jsonSky.get("cloudOffset").asObject().get("z").asDouble(prev.cloudOffset.z)
+        );
+
         this.animationTime = json.get("animationTime").asDouble(prev.animationTime);
     }
 
@@ -109,6 +127,11 @@ public class AnimationFrame {
         scene.sun().setIntensity(this.sunIntensity);
         scene.sun().setColor(this.sunColor);
         scene.sun().setDrawTexture(this.sunDraw);
+
+        scene.sky().setCloudsEnabled(this.cloudsEnabled);
+        scene.sky().setCloudXOffset(this.cloudOffset.x);
+        scene.sky().setCloudYOffset(this.cloudOffset.y);
+        scene.sky().setCloudZOffset(this.cloudOffset.z);
 
         scene.setAnimationTime(this.animationTime);
     }
