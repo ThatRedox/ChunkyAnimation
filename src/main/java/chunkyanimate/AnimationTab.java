@@ -1,5 +1,6 @@
 package chunkyanimate;
 
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,10 +16,7 @@ public class AnimationTab implements RenderControlsTab {
 
     public AnimationTab(AnimationManager manager) {
         box = new VBox(10.0);
-
-        Button testButton = new Button("Sun cycle");
-        testButton.setOnAction(e -> manager.sunCycle());
-        box.getChildren().add(testButton);
+        box.setPadding(new Insets(10.0, 0, 0, 10.0));
 
         DirectoryChooser chooser = new DirectoryChooser();
         Button directoryButton = new Button("Choose a Folder");

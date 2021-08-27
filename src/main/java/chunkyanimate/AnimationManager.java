@@ -9,18 +9,18 @@ import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
 
 import java.io.*;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class AnimationManager {
 
     private Chunky chunky = null;
     private boolean animating = false;
     private int frameCount = 0;
-    private int totalFrames = 0;
+    private final ArrayList<AnimationFrame> animationFrames = new ArrayList<>();
 
     private Label progressLabel = null;
-
-    private final ArrayDeque<AnimationFrame> animationFrames = new ArrayDeque<>();
 
     public void setChunky(Chunky chunky) {
         this.chunky = chunky;
@@ -58,7 +58,8 @@ public class AnimationManager {
 
     public void updateLabel() {
         if (progressLabel != null) {
-            Platform.runLater(() -> progressLabel.setText(String.format("Frame %d / %d", frameCount, totalFrames)));
+            Platform.runLater(() -> progressLabel.setText(String.format("Frame %d / %d",
+                    frameCount, animationFrames.size())));
         }
     }
 
@@ -75,14 +76,13 @@ public class AnimationManager {
 
     public void startAnimation() {
         this.animating = true;
-        this.totalFrames = animationFrames.size();
+        this.frameCount = 0;
         updateLabel();
         runUntilRender();
     }
 
     public void stopAnimation() {
         this.animating = false;
-        this.totalFrames = 0;
     }
 
     public void runUntilRender() {
@@ -91,11 +91,14 @@ public class AnimationManager {
             scene.haltRender();
             scene.forceReset();
 
-            AnimationFrame frame = animationFrames.pollFirst();
-            if (frame != null) {
-                frame.apply(scene);
-                scene.startRender();
-                return;
+            if (frameCount < animationFrames.size()) {
+                AnimationFrame frame = animationFrames.get(frameCount);
+                frameCount++;
+                if (frame != null) {
+                    frame.apply(scene);
+                    scene.startRender();
+                    return;
+                }
             }
         }
 
@@ -112,7 +115,11 @@ public class AnimationManager {
         Scene scene = chunky.getSceneManager().getScene();
         AnimationFrame frame = new AnimationFrame(scene);
 
-        for (File file : folder.listFiles()) {
+        File[] files = folder.listFiles();
+        if (files == null) return;
+        Arrays.sort(files, Comparator.comparing(File::getName));
+
+        for (File file : files) {
             if (file.getName().endsWith(".json")) {
                 try (FileInputStream inStream = new FileInputStream(file)){
                     JsonParser parser = new JsonParser(inStream);
@@ -123,48 +130,7 @@ public class AnimationManager {
                 }
             }
         }
-
-        this.totalFrames = animationFrames.size();
         updateLabel();
-    }
-
-    public void sunCycle() {
-        animating = false;
-        frameCount = 0;
-        animationFrames.clear();
-
-        Scene scene = chunky.getSceneManager().getScene();
-
-        double azimuth = 0.8398896196381793;
-        AnimationFrame frame = new AnimationFrame(scene);
-        frame.sunAzimuth = azimuth;
-        for (double i = -10; i < 90; i++) {
-            String frameJson = String.format("{\"sun\": {\"azimuth\": %f, \"altitude\": %f}}",
-                    azimuth, Math.toRadians(i));
-            System.out.println(frameJson);
-
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(frameJson.getBytes());
-            try (JsonParser parser = new JsonParser(inputStream)) {
-                frame = new AnimationFrame(parser.parse().asObject(), frame);
-            } catch (IOException | JsonParser.SyntaxError e) {
-                System.out.println("^ Error");
-            }
-            animationFrames.add(frame);
-        }
-
-        for (double i = 90; i < 190; i++) {
-            String frameJson = String.format("{\"sun\": {\"azimuth\": %f, \"altitude\": %f}}",
-                    azimuth + Math.PI, Math.toRadians(i));
-            System.out.println(frameJson);
-
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(frameJson.getBytes());
-            try (JsonParser parser = new JsonParser(inputStream)) {
-                frame = new AnimationFrame(parser.parse().asObject(), frame);
-            } catch (IOException | JsonParser.SyntaxError e) {
-                System.out.println("^ Error");
-            }
-            animationFrames.add(frame);
-        }
     }
 
     public void setProgressLabel(Label label) {
