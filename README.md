@@ -22,5 +22,7 @@ To download the latest Chunky snapshot, open `Advanced Settings` in the Chunky L
 Upon opening Chunky, there will be a new tab called `Animation Controls`. Here you can choose a folder with json files
 to load as an animation. Afterwards, click `Start Animation` to start automatically rendering animation frames. Click
 `Stop Animation` to stop animating. The render reset button will **NOT** stop animating.
+![image](https://user-images.githubusercontent.com/42661490/131207357-d5a5fe74-8bc5-4a95-be53-2922bfa41f81.png)
 
 The resulting animation frames will be saved next to the initial scene under the `animate` folder.
+![image](https://user-images.githubusercontent.com/42661490/131207367-c7aabbb2-c0da-4e31-89a4-6de193ecd587.png)
