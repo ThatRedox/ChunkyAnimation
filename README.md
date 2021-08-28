@@ -15,7 +15,7 @@ Download the latest plugin build and extract it. In the Chunky Launcher, expand 
 `Manage plugins`. In the `Plugin Manager` window click on `Add` and select the `.jar` file in the extracted zip file. 
 Click on `Save` and start Chunky as usual.
 
-![image](https://user-images.githubusercontent.com/42661490/116319916-28ef2580-a76c-11eb-9f93-86d444a349fd.png)
+![image](https://user-images.githubusercontent.com/42661490/131207533-99f55041-5a2b-401f-979d-875d51971be1.png)
 
 To download the latest Chunky snapshot, open `Advanced Settings` in the Chunky Launcher and enable `Download Snapshots`. Then click on the `Check for update` button.
 
