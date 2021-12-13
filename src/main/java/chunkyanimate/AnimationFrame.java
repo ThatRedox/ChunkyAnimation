@@ -78,9 +78,9 @@ public class AnimationFrame {
                 jsonCamera.get("position").asObject().get("z").asDouble(prev.cameraPosition.z)
         );
         this.cameraOrientation.set(
-                jsonCamera.get("orientation").asObject().get("roll").asDouble(prev.cameraOrientation.z),
+                jsonCamera.get("orientation").asObject().get("yaw").asDouble(prev.cameraOrientation.x),
                 jsonCamera.get("orientation").asObject().get("pitch").asDouble(prev.cameraOrientation.y),
-                jsonCamera.get("orientation").asObject().get("yaw").asDouble(prev.cameraOrientation.x)
+                jsonCamera.get("orientation").asObject().get("roll").asDouble(prev.cameraOrientation.z)
         );
         this.cameraFov = jsonCamera.get("fov").asDouble(prev.cameraFov);
         this.cameraDof = jsonCamera.get("dof").asDouble(prev.cameraDof);
