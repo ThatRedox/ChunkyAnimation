@@ -10,17 +10,12 @@ a work in progress, but it is usable to make animations with json files generate
 * [Latest build from master](https://nightly.link/ThatRedox/ChunkyAnimation/workflows/master/master/ChunkyAnimate.zip)
 
 ## Installation
-### Note: The latest version requires at least snapshot `2.4.0-183-gffad4f42`
+### Note: The latest version requires at least Chunky `2.4.0`
 Download the latest plugin build and extract it. In the Chunky Launcher, expand `Advanced Settings` and click on 
 `Manage plugins`. In the `Plugin Manager` window click on `Add` and select the `.jar` file in the extracted zip file. 
 Click on `Save` and start Chunky as usual.
 
 ![image](https://user-images.githubusercontent.com/42661490/131207533-99f55041-5a2b-401f-979d-875d51971be1.png)
-
-To download the latest Chunky snapshot, open `Advanced Settings` in the Chunky Launcher and enable `Download Snapshots`. Then click on the `Check for update` button.
-
-![image](https://user-images.githubusercontent.com/42661490/116319834-0e1cb100-a76c-11eb-8842-e72dc2b76854.png)
-
 ## Usage
 Upon opening Chunky, there will be a new tab called `Animation Controls`. Here you can choose a folder with json files
 to load as an animation. Afterwards, click `Start Animation` to start automatically rendering animation frames. Click
