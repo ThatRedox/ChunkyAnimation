@@ -93,7 +93,6 @@ public class AnimationManager {
 
             if (frameCount < animationFrames.size()) {
                 AnimationFrame frame = animationFrames.get(frameCount);
-                frameCount++;
                 if (frame != null) {
                     frame.apply(scene);
                     scene.startRender();
