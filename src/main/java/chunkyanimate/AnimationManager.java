@@ -1,7 +1,13 @@
 package chunkyanimate;
 
+import it.unimi.dsi.fastutil.doubles.Double2ObjectMap;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectRBTreeMap;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectSortedMap;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.json.JsonParser;
@@ -9,9 +15,7 @@ import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 public class AnimationManager {
 
@@ -19,6 +23,7 @@ public class AnimationManager {
     private boolean animating = false;
     private int frameCount = 0;
     private final ArrayList<AnimationFrame> animationFrames = new ArrayList<>();
+    public final Double2ObjectSortedMap<AnimationKeyFrame> animationKeyFrames = new Double2ObjectRBTreeMap<>();
 
     private Label progressLabel = null;
 
@@ -129,6 +134,72 @@ public class AnimationManager {
                 }
             }
         }
+        updateLabel();
+    }
+
+    public void fromKeyFrames(double framerate) {
+        if (framerate == 0) return;
+
+        animating = false;
+        frameCount = 0;
+        animationFrames.clear();
+
+        updateLabel();
+
+        double endTime = animationKeyFrames.lastDoubleKey();
+        int numFrames = (int) (endTime * framerate) + 1;
+        if (numFrames < 1) return;
+
+        int numKeyFrames = animationKeyFrames.size();
+        Map<String, PolynomialSplineFunction> interps = new HashMap<>();
+        DoubleArrayList times = new DoubleArrayList(numKeyFrames);
+        DoubleArrayList entries = new DoubleArrayList(numKeyFrames);
+        String[] fieldNames = new AnimationKeyFrame().getInterpFields().keySet().toArray(new String[0]);
+        for (int i = 0; i < AnimationKeyFrame.INTERP_FIELDS; i++) {
+            String field = fieldNames[i];
+
+            times.clear();
+            entries.clear();
+            for (Double2ObjectMap.Entry<AnimationKeyFrame> keyFrameEntry : animationKeyFrames.double2ObjectEntrySet()) {
+                AnimationKeyFrame keyFrame = keyFrameEntry.getValue();
+                OptionalDouble fieldValue = keyFrame.getInterpFields().get(field);
+                if (fieldValue.isPresent()) {
+                    times.add(keyFrameEntry.getDoubleKey());
+                    entries.add(fieldValue.getAsDouble());
+                }
+            }
+
+            if (!times.isEmpty()) {
+                if (times.size() == 1) {
+                    times.add(1);
+                    times.add(2);
+                    entries.add(entries.getDouble(0));
+                    entries.add(entries.getDouble(0));
+                } else if (times.size() == 2) {
+                    times.add(1, (times.getDouble(0) + times.getDouble(1)) / 2);
+                    entries.add(1, (entries.getDouble(0) + entries.getDouble(1)) / 2);
+                }
+
+                interps.put(field, new SplineInterpolator().interpolate(
+                        times.toArray(new double[0]),
+                        entries.toArray(new double[0])));
+            }
+        }
+
+        animationFrames.ensureCapacity(numFrames);
+        AnimationFrame prevFrame = new AnimationFrame(chunky.getSceneManager().getScene());
+        for (int i = 0; i < numFrames; i++) {
+            double frameTime = i / framerate;
+            prevFrame = new AnimationFrame(field -> {
+                        if (interps.containsKey(field)) {
+                            return OptionalDouble.of(interps.get(field).value(frameTime));
+                        } else {
+                            return OptionalDouble.empty();
+                        }
+                    }, prevFrame);
+            animationFrames.add(prevFrame);
+        }
+
         updateLabel();
     }
 

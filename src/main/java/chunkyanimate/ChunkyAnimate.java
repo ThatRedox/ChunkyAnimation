@@ -3,8 +3,10 @@ package chunkyanimate;
 import se.llbit.chunky.Plugin;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
+import se.llbit.chunky.renderer.PathTracingRenderer;
 import se.llbit.chunky.renderer.RenderMode;
 import se.llbit.chunky.renderer.RenderStatusListener;
+import se.llbit.chunky.renderer.scene.PreviewRayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.ChunkyFx;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
@@ -15,6 +17,8 @@ public class ChunkyAnimate implements Plugin {
     @Override
     public void attach(Chunky chunky) {
         manager.setChunky(chunky);
+
+        Chunky.addRenderer(new PathTracingRenderer("AnimationPreview", "AnimationPreview", "AnimationPreviewRenderer", new PreviewRayTracer()));
 
         Scene scene = chunky.getSceneManager().getScene();
         chunky.getRenderController().getRenderManager().addRenderListener(new RenderStatusListener() {

@@ -26,6 +26,20 @@ public class AnimationTab implements RenderControlsTab {
         });
         box.getChildren().add(directoryButton);
 
+        Button debugButton = new Button("Trigger Debugger");
+        debugButton.setOnAction(e -> {
+            AnimationManager m = manager;
+            AnimationKeyFrame frame = new AnimationKeyFrame();
+            System.out.println(frame);
+        });
+        box.getChildren().add(debugButton);
+
+        Button keyFramesButton = new Button("From Keyframes (30 fps)");
+        keyFramesButton.setOnAction(e -> {
+            manager.fromKeyFrames(30);
+        });
+        box.getChildren().add(keyFramesButton);
+
         Button startAnimationButton = new Button("Start Animation");
         startAnimationButton.setOnAction(e -> manager.startAnimation());
         box.getChildren().add(startAnimationButton);
