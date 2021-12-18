@@ -4,6 +4,10 @@ import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.json.JsonObject;
 import se.llbit.math.Vector3;
 
+import java.lang.reflect.Field;
+import java.util.OptionalDouble;
+import java.util.function.Function;
+
 public class AnimationFrame {
     public double fogDensity;
     public double skyFogDensity;
@@ -106,6 +110,73 @@ public class AnimationFrame {
         );
 
         this.animationTime = json.get("animationTime").asDouble(prev.animationTime);
+    }
+
+    public AnimationFrame(AnimationFrame prev) {
+        this.fogDensity = prev.fogDensity;
+        this.skyFogDensity = prev.skyFogDensity;
+        this.fogColor.set(prev.fogColor);
+
+        this.waterWorldEnabled = prev.waterWorldEnabled;
+        this.waterWorldHeight = prev.waterWorldHeight;
+
+        this.cameraPosition.set(prev.cameraPosition);
+        this.cameraOrientation.set(prev.cameraOrientation);
+        this.cameraFov = prev.cameraFov;
+        this.cameraDof = prev.cameraDof;
+        this.cameraFocus = prev.cameraFocus;
+
+        this.sunAltitude = prev.sunAltitude;
+        this.sunAzimuth = prev.sunAzimuth;
+        this.sunIntensity = prev.sunIntensity;
+        this.sunColor.set(prev.sunColor);
+        this.sunDraw = prev.sunDraw;
+
+        this.cloudsEnabled = prev.cloudsEnabled;
+        this.cloudOffset.set(prev.cloudOffset);
+
+        this.animationTime = prev.animationTime;
+    }
+
+    public AnimationFrame(Function<String, OptionalDouble> fieldProvider, AnimationFrame prev) {
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                Object value = field.get(this);
+                Object prevValue = field.get(prev);
+                if (value instanceof Double && prevValue instanceof Double) {
+                    field.set(this, fieldProvider.apply(field.getName()).orElse((Double) prevValue));
+                }
+            } catch (IllegalAccessException e) {
+                // Ignored
+            }
+        }
+
+        fogColor.set(
+                fieldProvider.apply("fogColorX").orElse(prev.fogColor.x),
+                fieldProvider.apply("fogColorY").orElse(prev.fogColor.y),
+                fieldProvider.apply("fogColorZ").orElse(prev.fogColor.z)
+        );
+        cameraPosition.set(
+                fieldProvider.apply("cameraPositionX").orElse(prev.cameraPosition.x),
+                fieldProvider.apply("cameraPositionY").orElse(prev.cameraPosition.y),
+                fieldProvider.apply("cameraPositionZ").orElse(prev.cameraPosition.z)
+        );
+        cameraOrientation.set(
+                fieldProvider.apply("cameraOrientationX").orElse(prev.cameraOrientation.x),
+                fieldProvider.apply("cameraOrientationY").orElse(prev.cameraOrientation.y),
+                fieldProvider.apply("cameraOrientationZ").orElse(prev.cameraOrientation.z)
+        );
+        sunColor.set(
+                fieldProvider.apply("sunColorX").orElse(prev.sunColor.x),
+                fieldProvider.apply("sunColorY").orElse(prev.sunColor.y),
+                fieldProvider.apply("sunColorZ").orElse(prev.sunColor.z)
+        );
+        cloudOffset.set(
+                fieldProvider.apply("cloudOffsetX").orElse(prev.cloudOffset.x),
+                fieldProvider.apply("cloudOffsetY").orElse(prev.cloudOffset.y),
+                fieldProvider.apply("cloudOffsetZ").orElse(prev.cloudOffset.z)
+        );
     }
 
     public void apply(Scene scene) {
