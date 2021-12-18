@@ -163,9 +163,9 @@ public class AnimationFrame {
                 fieldProvider.apply("cameraPositionZ").orElse(prev.cameraPosition.z)
         );
         cameraOrientation.set(
-                fieldProvider.apply("cameraOrientationX").orElse(prev.cameraOrientation.x),
-                fieldProvider.apply("cameraOrientationY").orElse(prev.cameraOrientation.y),
-                fieldProvider.apply("cameraOrientationZ").orElse(prev.cameraOrientation.z)
+                fieldProvider.apply("cameraOrientationYaw").orElse(prev.cameraOrientation.x),
+                fieldProvider.apply("cameraOrientationPitch").orElse(prev.cameraOrientation.y),
+                fieldProvider.apply("cameraOrientationRoll").orElse(prev.cameraOrientation.z)
         );
         sunColor.set(
                 fieldProvider.apply("sunColorX").orElse(prev.sunColor.x),

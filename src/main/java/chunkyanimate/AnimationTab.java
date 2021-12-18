@@ -4,9 +4,11 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 
 import java.io.File;
@@ -16,29 +18,38 @@ public class AnimationTab implements RenderControlsTab {
 
     public AnimationTab(AnimationManager manager) {
         box = new VBox(10.0);
-        box.setPadding(new Insets(10.0, 0, 0, 10.0));
-
-        DirectoryChooser chooser = new DirectoryChooser();
-        Button directoryButton = new Button("Choose a Folder");
-        directoryButton.setOnAction(e -> {
-            File dir = chooser.showDialog(box.getScene().getWindow());
-            manager.fromFolder(dir);
-        });
-        box.getChildren().add(directoryButton);
+        box.setPadding(new Insets(10.0, 0, 10.0, 10.0));
 
         Button debugButton = new Button("Trigger Debugger");
         debugButton.setOnAction(e -> {
             AnimationManager m = manager;
             AnimationKeyFrame frame = new AnimationKeyFrame();
-            System.out.println(frame);
+            System.out.println("Debugger");
         });
         box.getChildren().add(debugButton);
 
-        Button keyFramesButton = new Button("From Keyframes (30 fps)");
-        keyFramesButton.setOnAction(e -> {
-            manager.fromKeyFrames(30);
+        {
+            HBox fromKeyFramesBox = new HBox(10);
+            fromKeyFramesBox.getChildren().add(new Label("Framerate:"));
+
+            DoubleTextField framerateField = new DoubleTextField();
+            framerateField.valueProperty().setValue(30);
+            fromKeyFramesBox.getChildren().add(framerateField);
+
+            Button keyFramesButton = new Button("From Keyframes");
+            keyFramesButton.setOnAction(e -> manager.fromKeyFrames(framerateField.valueProperty().doubleValue()));
+            fromKeyFramesBox.getChildren().add(keyFramesButton);
+
+            box.getChildren().add(fromKeyFramesBox);
+        }
+
+        DirectoryChooser chooser = new DirectoryChooser();
+        Button directoryButton = new Button("Load Frames From Folder");
+        directoryButton.setOnAction(e -> {
+            File dir = chooser.showDialog(box.getScene().getWindow());
+            manager.fromFolder(dir);
         });
-        box.getChildren().add(keyFramesButton);
+        box.getChildren().add(directoryButton);
 
         Button startAnimationButton = new Button("Start Animation");
         startAnimationButton.setOnAction(e -> manager.startAnimation());
