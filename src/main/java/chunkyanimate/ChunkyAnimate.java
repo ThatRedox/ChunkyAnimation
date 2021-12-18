@@ -43,6 +43,7 @@ public class ChunkyAnimate implements Plugin {
         chunky.setRenderControlsTabTransformer(tabs -> {
             tabs = prev.apply(tabs);
             tabs.add(new AnimationTab(manager));
+            tabs.add(new KeyFrameTab(manager));
             return tabs;
         });
     }

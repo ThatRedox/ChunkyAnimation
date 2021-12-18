@@ -19,6 +19,8 @@ public class AnimationKeyFrame {
         INTERP_FIELDS = numFields;
     }
 
+    public Optional<String> keyframeName = Optional.empty();
+
     public OptionalDouble fogDensity = OptionalDouble.empty();
     public OptionalDouble skyFogDensity = OptionalDouble.empty();
     public OptionalDouble fogColorX = OptionalDouble.empty();
