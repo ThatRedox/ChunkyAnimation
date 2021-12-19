@@ -20,14 +20,6 @@ public class AnimationTab implements RenderControlsTab {
         box = new VBox(10.0);
         box.setPadding(new Insets(10.0, 0, 10.0, 10.0));
 
-        Button debugButton = new Button("Trigger Debugger");
-        debugButton.setOnAction(e -> {
-            AnimationManager m = manager;
-            AnimationKeyFrame frame = new AnimationKeyFrame();
-            System.out.println("Debugger");
-        });
-        box.getChildren().add(debugButton);
-
         {
             HBox fromKeyFramesBox = new HBox(10);
             fromKeyFramesBox.getChildren().add(new Label("Framerate:"));

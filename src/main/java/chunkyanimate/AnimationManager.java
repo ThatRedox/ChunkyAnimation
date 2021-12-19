@@ -10,8 +10,12 @@ import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.json.JsonObject;
 import se.llbit.json.JsonParser;
+import se.llbit.json.JsonValue;
+import se.llbit.json.PrettyPrinter;
 import se.llbit.log.Log;
+import se.llbit.math.QuickMath;
 import se.llbit.util.TaskTracker;
 
 import java.io.*;
@@ -29,6 +33,45 @@ public class AnimationManager {
 
     public void setChunky(Chunky chunky) {
         this.chunky = chunky;
+    }
+
+    public JsonObject keyframesJson() {
+        JsonObject out = new JsonObject();
+        for (Double2ObjectMap.Entry<AnimationKeyFrame> frame : animationKeyFrames.double2ObjectEntrySet()) {
+            out.set(Double.toString(frame.getDoubleKey()), frame.getValue().toJson());
+        }
+        return out;
+    }
+
+    public void saveKeyframes(File out) throws FileNotFoundException {
+        try (PrettyPrinter pp = new PrettyPrinter("  ",
+                new PrintStream(new BufferedOutputStream(new FileOutputStream(out))))) {
+            JsonObject keyframes = this.keyframesJson();
+            keyframes.prettyPrint(pp);
+        }
+    }
+
+    public void loadKeyframesJson(JsonObject obj) {
+        for (Map.Entry<String, JsonValue> entry : obj.toMap().entrySet()) {
+            try {
+                double value = Double.parseDouble(entry.getKey());
+                if (entry.getValue().isObject()) {
+                    AnimationKeyFrame frame = new AnimationKeyFrame(entry.getValue().asObject());
+                    animationKeyFrames.put(value, frame);
+                }
+            } catch (NullPointerException | NumberFormatException e) {
+                // Ignored
+            }
+        }
+    }
+
+    public void loadKeyframes(File in) throws IOException {
+        try (JsonParser parser = new JsonParser(new BufferedInputStream(new FileInputStream(in)))) {
+            JsonObject obj = parser.parse().object();
+            this.loadKeyframesJson(obj);
+        } catch (JsonParser.SyntaxError e) {
+            Log.error("Syntax error while loading keyframes: ", e);
+        }
     }
 
     public void saveFrame(int count) {
@@ -153,43 +196,45 @@ public class AnimationManager {
         int numKeyFrames = animationKeyFrames.size();
         Map<String, PolynomialSplineFunction> interps = new HashMap<>();
         DoubleArrayList times = new DoubleArrayList(numKeyFrames);
-        DoubleArrayList entries = new DoubleArrayList(numKeyFrames);
-        String[] fieldNames = new AnimationKeyFrame().getInterpFields().keySet().toArray(new String[0]);
-        for (int i = 0; i < AnimationKeyFrame.INTERP_FIELDS; i++) {
-            String field = fieldNames[i];
-
+        ArrayList<Double> entries = new ArrayList<>(numKeyFrames);
+        String[] fieldNames = AnimationKeyFrame.interpolatableFields();
+        for (String field : fieldNames) {
             times.clear();
             entries.clear();
             for (Double2ObjectMap.Entry<AnimationKeyFrame> keyFrameEntry : animationKeyFrames.double2ObjectEntrySet()) {
                 AnimationKeyFrame keyFrame = keyFrameEntry.getValue();
-                OptionalDouble fieldValue = keyFrame.getInterpFields().get(field);
-                if (fieldValue.isPresent()) {
+                if (keyFrame.interpFields.containsKey(field)) {
                     times.add(keyFrameEntry.getDoubleKey());
-                    entries.add(fieldValue.getAsDouble());
+                    entries.add(keyFrame.interpFields.get(field));
                 }
             }
 
             if (!times.isEmpty()) {
-                if (times.size() == 1) {
-                    times.add(1);
-                    times.add(2);
-                    entries.add(entries.getDouble(0));
-                    entries.add(entries.getDouble(0));
-                } else if (times.size() == 2) {
+                if (times.getDouble(0) > 0) {
+                    times.add(0, 0);
+                    entries.add(0, entries.get(0));
+                }
+                if (times.getDouble(times.size()-1) != endTime) {
+                    times.add(endTime);
+                    entries.add(entries.get(entries.size() - 1));
+                }
+                if (times.size() == 2) {
                     times.add(1, (times.getDouble(0) + times.getDouble(1)) / 2);
-                    entries.add(1, (entries.getDouble(0) + entries.getDouble(1)) / 2);
+                    entries.add(1, (entries.get(0) + entries.get(1)) / 2);
                 }
 
+                double[] entriesArray = new double[entries.size()];
+                Arrays.setAll(entriesArray, entries::get);
                 interps.put(field, new SplineInterpolator().interpolate(
                         times.toArray(new double[0]),
-                        entries.toArray(new double[0])));
+                        entriesArray));
             }
         }
 
         animationFrames.ensureCapacity(numFrames);
         AnimationFrame prevFrame = new AnimationFrame(chunky.getSceneManager().getScene());
         for (int i = 0; i < numFrames; i++) {
-            double frameTime = i / framerate;
+            double frameTime = QuickMath.clamp(i / framerate, 0, endTime);
             prevFrame = new AnimationFrame(field -> {
                         if (interps.containsKey(field)) {
                             return OptionalDouble.of(interps.get(field).value(frameTime));
