@@ -56,7 +56,9 @@ public class KeyFrameTab implements RenderControlsTab {
             ));
             keyframeTable.getColumns().add(timeCol);
             keyframeTable.getSelectionModel().selectedItemProperty().addListener(
-                    (observable, oldValue, newValue) -> this.setKeyframeFields(newValue.getValue()));
+                    (observable, oldValue, newValue) -> {
+                        if (newValue != null) this.setKeyframeFields(newValue.getValue());
+                    });
             box.getChildren().add(keyframeTable);
 
             HBox saveLoadBox = centeredHBox();
@@ -180,8 +182,15 @@ public class KeyFrameTab implements RenderControlsTab {
     }
 
     public void updateManager() {
+        Double2ObjectMap.Entry<AnimationKeyFrame> entry = keyframeTable.getSelectionModel().getSelectedItem();
+        double selectedTime = entry != null ? entry.getDoubleKey() : Double.NaN;
+
         keyframeTable.getItems().clear();
         keyframeTable.getItems().addAll(manager.animationKeyFrames.double2ObjectEntrySet());
+        keyframeTable.getItems().stream()
+                .filter(e -> e.getDoubleKey() == selectedTime)
+                .findFirst()
+                .ifPresent(e -> keyframeTable.getSelectionModel().select(e));
     }
 
     private void setKeyframeFields(AnimationKeyFrame keyFrame) {
