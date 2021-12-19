@@ -1,6 +1,9 @@
 package chunkyanimate;
 
-import it.unimi.dsi.fastutil.doubles.Double2ObjectMap;
+import chunkyanimate.reflection.DoubleField;
+import chunkyanimate.reflection.DoubleJsonField;
+import chunkyanimate.reflection.DoubleSceneField;
+import it.unimi.dsi.fastutil.doubles.*;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -14,11 +17,15 @@ import javafx.stage.FileChooser;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.render.RenderControlsTab;
+import se.llbit.json.JsonObject;
 import se.llbit.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ListIterator;
+import java.util.SortedSet;
 
 public class KeyFrameTab implements RenderControlsTab {
     private final AnimationManager manager;
@@ -27,6 +34,8 @@ public class KeyFrameTab implements RenderControlsTab {
 
     private final DoubleTextField[] keyframeFields =
             new DoubleTextField[AnimationKeyFrame.interpolatableFields().length];
+
+    private Scene scene = null;
 
     public KeyFrameTab(AnimationManager manager) {
         this.manager = manager;
@@ -125,15 +134,38 @@ public class KeyFrameTab implements RenderControlsTab {
         // Keyframe editor
         {
             box.getChildren().add(new Separator());
-            String[] interpFields = AnimationKeyFrame.interpolatableFields();
+            Field[] interpFields = AnimationKeyFrame.interpolatableFields();
             for (int i = 0; i < interpFields.length; i++) {
-                String field = interpFields[i];
+                Field field = interpFields[i];
+                DoubleSceneField sceneField = field.getAnnotation(DoubleSceneField.class);
+                DoubleJsonField jsonField = field.getAnnotation(DoubleJsonField.class);
+                DoubleField fieldValue = field.getAnnotation(DoubleField.class);
+                String fieldName = fieldValue == null ? field.getName() : fieldValue.value();
+
                 DoubleTextField textField = new DoubleTextField();
                 textField.setText("");
+                Button currentValueButton = new Button("From Scene");
+                currentValueButton.setOnAction(e -> {
+                    if (scene != null) {
+                        double value = Double.NaN;
+                        if (sceneField != null) {
+                            value = AnimationFrame.resolveSceneDoubleField(scene, sceneField.value());
+                        } else if (jsonField != null) {
+                            value = AnimationFrame.resolveJsonField(scene.toJson(), jsonField.value()).doubleValue(Double.NaN);
+                        }
+                        if (!Double.isNaN(value)) {
+                            if (fieldValue != null && fieldValue.inRadians()) {
+                                value = Math.toDegrees(value);
+                            }
+                            textField.setText(Double.toString(value));
+                        }
+                    }
+                });
                 keyframeFields[i] = textField;
                 box.getChildren().add(centeredHBox(
-                        new Label(field + ": "),
-                        textField
+                        new Label(fieldName + ": "),
+                        textField,
+                        currentValueButton
                 ));
             }
         }
@@ -153,9 +185,12 @@ public class KeyFrameTab implements RenderControlsTab {
     }
 
     private void setKeyframeFields(AnimationKeyFrame keyFrame) {
-        String[] interpFields = AnimationKeyFrame.interpolatableFields();
+        Field[] interpFields = AnimationKeyFrame.interpolatableFields();
         for (int i = 0; i < interpFields.length; i++) {
-            String fieldName = interpFields[i];
+            String fieldName = interpFields[i].getName();
+            boolean inRadians = interpFields[i].isAnnotationPresent(DoubleField.class) &&
+                    interpFields[i].getAnnotation(DoubleField.class).inRadians();
+
             TextField field = keyframeFields[i];
             try {
                 field.getOnAction().handle(null);
@@ -163,13 +198,20 @@ public class KeyFrameTab implements RenderControlsTab {
                 // Ignored
             }
             if (keyFrame.interpFields.containsKey(fieldName)) {
-                field.setText(Double.toString(keyFrame.interpFields.get(fieldName)));
+                double value = keyFrame.interpFields.get(fieldName);
+                if (inRadians) {
+                    value = Math.toDegrees(value);
+                }
+                field.setText(Double.toString(value));
             } else {
                 field.setText("");
             }
             field.setOnAction(e -> {
                 try {
                     double value = Double.parseDouble(field.getText());
+                    if (inRadians) {
+                        value = Math.toRadians(value);
+                    }
                     keyFrame.interpFields.put(fieldName, value);
                 } catch (NullPointerException | NumberFormatException ignored) {
                     keyFrame.interpFields.remove(fieldName);
@@ -179,7 +221,9 @@ public class KeyFrameTab implements RenderControlsTab {
     }
 
     @Override
-    public void update(Scene scene) { }
+    public void update(Scene scene) {
+        this.scene = scene;
+    }
 
     @Override
     public String getTabTitle() {

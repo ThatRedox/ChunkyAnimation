@@ -1,10 +1,13 @@
 package chunkyanimate;
 
 import chunkyanimate.reflection.BooleanJsonField;
+import chunkyanimate.reflection.DoubleField;
 import chunkyanimate.reflection.DoubleJsonField;
+import chunkyanimate.reflection.DoubleSceneField;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;
+import se.llbit.log.Log;
 import se.llbit.math.Vector3;
 
 import java.lang.reflect.Field;
@@ -12,76 +15,157 @@ import java.util.OptionalDouble;
 import java.util.function.Function;
 
 public class AnimationFrame {
-    @DoubleJsonField("fogDensity") public double fogDensity;
-    @DoubleJsonField("skyFogDensity") public double skyFogDensity;
-    @DoubleJsonField("fogColor.red") public double fogColorR;
-    @DoubleJsonField("fogColor.green") public double fogColorG;
-    @DoubleJsonField("fogColor.blue") public double fogColorB;
+    @DoubleJsonField("fogDensity")
+    @DoubleSceneField("fogDensity")
+    @DoubleField("Fog density")
+    public double fogDensity;
 
-    @BooleanJsonField("waterWorldEnabled") public boolean waterWorldEnabled;
-    @DoubleJsonField("waterWorldHeight") public double waterWorldHeight;
+    @DoubleJsonField("skyFogDensity")
+    @DoubleSceneField("skyFogDensity")
+    @DoubleField("Sky fog blending")
+    public double skyFogDensity;
 
-    @DoubleJsonField("camera.position.x") public double cameraPositionX;
-    @DoubleJsonField("camera.position.y") public double cameraPositionY;
-    @DoubleJsonField("camera.position.z") public double cameraPositionZ;
+    @DoubleJsonField("fogColor.red")
+    @DoubleSceneField("fogColor.x")
+    @DoubleField(value = "Fog color (R)", sortOrder = "fogColor.0")
+    public double fogColorR;
 
-    @DoubleJsonField("camera.orientation.yaw") public double cameraOrientationYaw;
-    @DoubleJsonField("camera.orientation.pitch") public double cameraOrientationPitch;
-    @DoubleJsonField("camera.orientation.roll") public double cameraOrientationRoll;
+    @DoubleJsonField("fogColor.green")
+    @DoubleSceneField("fogColor.y")
+    @DoubleField(value = "Fog color (G)", sortOrder = "fogColor.1")
+    public double fogColorG;
 
-    @DoubleJsonField("camera.fov") public double cameraFov;
-    @DoubleJsonField("camera.dof") public double cameraDof;
-    @DoubleJsonField("camera.focalOffset") public double cameraFocus;
+    @DoubleJsonField("fogColor.blue")
+    @DoubleSceneField("fogColor.z")
+    @DoubleField(value = "Fog color (B)", sortOrder = "fogColor.2")
+    public double fogColorB;
 
-    @DoubleJsonField("sun.altitude") public double sunAltitude;
-    @DoubleJsonField("sun.azimuth") public double sunAzimuth;
-    @DoubleJsonField("sun.intensity") public double sunIntensity;
-    @DoubleJsonField("sun.color.red") public double sunColorR;
-    @DoubleJsonField("sun.color.green") public double sunColorG;
-    @DoubleJsonField("sun.color.blue") public double sunColorB;
-    @BooleanJsonField("sun.drawTexture") public boolean sunDraw;
+    @BooleanJsonField("waterWorldEnabled")
+    public boolean waterWorldEnabled;
 
-    @BooleanJsonField("sky.cloudsEnabled") public boolean cloudsEnabled;
-    @DoubleJsonField("sky.cloudOffset.x") public double cloudOffsetX;
-    @DoubleJsonField("sky.cloudOffset.y") public double cloudOffsetY;
-    @DoubleJsonField("sky.cloudOffset.z") public double cloudOffsetZ;
+    @DoubleJsonField("waterWorldHeight")
+    @DoubleSceneField("waterPlaneHeight")
+    @DoubleField("Water world height")
+    public double waterWorldHeight;
 
-    @DoubleJsonField("animationTime") public double animationTime;
+    @DoubleJsonField("camera.position.x")
+    @DoubleSceneField("camera.pos.x")
+    @DoubleField(value = "Camera position (X)", sortOrder = "cameraPosition.0")
+    public double cameraPositionX;
+
+    @DoubleJsonField("camera.position.y")
+    @DoubleSceneField("camera.pos.y")
+    @DoubleField(value = "Camera position (Y)", sortOrder = "cameraPosition.1")
+    public double cameraPositionY;
+
+    @DoubleJsonField("camera.position.z")
+    @DoubleSceneField("camera.pos.z")
+    @DoubleField(value = "Camera position (Z)", sortOrder = "cameraPosition.2")
+    public double cameraPositionZ;
+
+    @DoubleJsonField("camera.orientation.yaw")
+    @DoubleSceneField("camera.yaw")
+    @DoubleField(value = "Camera yaw", sortOrder = "cameraOrientation.0", inRadians = true)
+    public double cameraOrientationYaw;
+
+    @DoubleJsonField("camera.orientation.pitch")
+    @DoubleSceneField("camera.pitch")
+    @DoubleField(value = "Camera pitch", sortOrder = "cameraOrientation.1", inRadians = true)
+    public double cameraOrientationPitch;
+
+    @DoubleJsonField("camera.orientation.roll")
+    @DoubleSceneField("camera.roll")
+    @DoubleField(value = "Camera roll", sortOrder = "cameraOrientation.2", inRadians = true)
+    public double cameraOrientationRoll;
+
+    @DoubleJsonField("camera.fov")
+    @DoubleSceneField("camera.fov")
+    @DoubleField("Camera field of view")
+    public double cameraFov;
+
+    @DoubleJsonField("camera.dof")
+    @DoubleSceneField("camera.dof")
+    @DoubleField("Camera depth of field")
+    public double cameraDof;
+
+    @DoubleJsonField("camera.focalOffset")
+    @DoubleSceneField("camera.subjectDistance")
+    @DoubleField("Camera focal length")
+    public double cameraFocus;
+
+    @DoubleJsonField("sun.altitude")
+    @DoubleSceneField("sun.altitude")
+    @DoubleField(value = "Sun altitude", inRadians = true)
+    public double sunAltitude;
+
+    @DoubleJsonField("sun.azimuth")
+    @DoubleSceneField("sun.azimuth")
+    @DoubleField(value = "Sun azimuth", inRadians = true)
+    public double sunAzimuth;
+
+    @DoubleJsonField("sun.intensity")
+    @DoubleSceneField("sun.intensity")
+    @DoubleField("Sun intensity")
+    public double sunIntensity;
+
+    @DoubleJsonField("sun.color.red")
+    @DoubleSceneField("sun.color.x")
+    @DoubleField(value = "Sun color (R)", sortOrder = "sunColor.0")
+    public double sunColorR;
+
+    @DoubleJsonField("sun.color.green")
+    @DoubleSceneField("sun.color.y")
+    @DoubleField(value = "Sun color (G)", sortOrder = "sunColor.1")
+    public double sunColorG;
+
+    @DoubleJsonField("sun.color.blue")
+    @DoubleSceneField("sun.color.z")
+    @DoubleField(value = "Sun color (B)", sortOrder = "sunColor.2")
+    public double sunColorB;
+
+    @BooleanJsonField("sun.drawTexture")
+    public boolean sunDraw;
+
+    @BooleanJsonField("sky.cloudsEnabled")
+    public boolean cloudsEnabled;
+
+    @DoubleJsonField("sky.cloudOffset.x")
+    @DoubleSceneField("sky.cloudOffset.x")
+    @DoubleField(value = "Cloud offset (X)", sortOrder = "cloudOffset.0")
+    public double cloudOffsetX;
+
+    @DoubleJsonField("sky.cloudOffset.y")
+    @DoubleSceneField("sky.cloudOffset.y")
+    @DoubleField(value = "Cloud offset (Y)", sortOrder = "cloudOffset.1")
+    public double cloudOffsetY;
+
+    @DoubleJsonField("sky.cloudOffset.z")
+    @DoubleSceneField("sky.cloudOffset.z")
+    @DoubleField(value = "Cloud offset (Z)", sortOrder = "cloudOffset.2")
+    public double cloudOffsetZ;
+
+    @DoubleJsonField("animationTime")
+    @DoubleSceneField("animationTime")
+    @DoubleField("Animation time")
+    public double animationTime;
 
     public AnimationFrame(Scene scene) {
-        this.fogDensity = scene.getFogDensity();
-        this.skyFogDensity = scene.getSkyFogDensity();
-        this.fogColorR = scene.getFogColor().x;
-        this.fogColorG = scene.getFogColor().y;
-        this.fogColorB = scene.getFogColor().z;
-
         this.waterWorldEnabled = scene.isWaterPlaneEnabled();
-        this.waterWorldHeight = scene.getWaterPlaneHeight();
-
-        this.cameraPositionX = scene.camera().getPosition().x;
-        this.cameraPositionY = scene.camera().getPosition().y;
-        this.cameraPositionZ = scene.camera().getPosition().z;
-        this.cameraOrientationYaw = scene.camera().getYaw();
-        this.cameraOrientationPitch = scene.camera().getPitch();
-        this.cameraOrientationRoll = scene.camera().getRoll();
-        this.cameraFov = scene.camera().getFov();
-        this.cameraDof = scene.camera().getDof();
-        this.cameraFocus = scene.camera().getSubjectDistance();
-
-        this.sunAltitude = scene.sun().getAltitude();
-        this.sunAzimuth = scene.sun().getAzimuth();
-        this.sunIntensity = scene.sun().getIntensity();
-        this.sunColorR = scene.sun().getColor().x;
-        this.sunColorG = scene.sun().getColor().y;
-        this.sunColorB = scene.sun().getColor().z;
         this.sunDraw = scene.sun().drawTexture();
-
         this.cloudsEnabled = scene.sky().cloudsEnabled();
-        this.cloudOffsetX = scene.sky().cloudXOffset();
-        this.cloudOffsetY = scene.sky().cloudYOffset();
-        this.cloudOffsetZ = scene.sky().cloudZOffset();
 
-        this.animationTime = scene.getAnimationTime();
+        for (Field field : this.getClass().getDeclaredFields()) {
+            try {
+                DoubleSceneField doubleField = field.getAnnotation(DoubleSceneField.class);
+                if (doubleField != null) {
+                    field.set(this, resolveSceneDoubleField(scene, doubleField.value()));
+                    continue;
+                }
+            } catch (IllegalAccessException e) {
+                // Ignored
+            }
+        }
+
     }
 
     public AnimationFrame(JsonObject json, AnimationFrame prev) {
@@ -106,12 +190,27 @@ public class AnimationFrame {
         }
     }
 
-    private static JsonValue resolveJsonField(JsonObject json, String field) {
+    public static JsonValue resolveJsonField(JsonObject json, String field) {
         JsonValue value = json;
         for (String level : field.split("\\.")) {
             value = value.asObject().get(level);
         }
         return value;
+    }
+
+    public static double resolveSceneDoubleField(Scene scene, String field) {
+        Object obj = scene;
+        try {
+            for (String level : field.split("\\.")) {
+                Field f = obj.getClass().getDeclaredField(level);
+                f.setAccessible(true);
+                obj = f.get(obj);
+            }
+            return (double) obj;
+        } catch (NoSuchFieldException | IllegalAccessException | ClassCastException e) {
+            Log.error(e);
+            throw new RuntimeException(e);
+        }
     }
 
     @SuppressWarnings("CopyConstructorMissesField")

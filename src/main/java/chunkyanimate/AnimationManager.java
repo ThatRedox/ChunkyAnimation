@@ -19,6 +19,7 @@ import se.llbit.math.QuickMath;
 import se.llbit.util.TaskTracker;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class AnimationManager {
@@ -197,15 +198,15 @@ public class AnimationManager {
         Map<String, PolynomialSplineFunction> interps = new HashMap<>();
         DoubleArrayList times = new DoubleArrayList(numKeyFrames);
         ArrayList<Double> entries = new ArrayList<>(numKeyFrames);
-        String[] fieldNames = AnimationKeyFrame.interpolatableFields();
-        for (String field : fieldNames) {
+        Field[] fields = AnimationKeyFrame.interpolatableFields();
+        for (Field field : fields) {
             times.clear();
             entries.clear();
             for (Double2ObjectMap.Entry<AnimationKeyFrame> keyFrameEntry : animationKeyFrames.double2ObjectEntrySet()) {
                 AnimationKeyFrame keyFrame = keyFrameEntry.getValue();
-                if (keyFrame.interpFields.containsKey(field)) {
+                if (keyFrame.interpFields.containsKey(field.getName())) {
                     times.add(keyFrameEntry.getDoubleKey());
-                    entries.add(keyFrame.interpFields.get(field));
+                    entries.add(keyFrame.interpFields.get(field.getName()));
                 }
             }
 
@@ -225,7 +226,7 @@ public class AnimationManager {
 
                 double[] entriesArray = new double[entries.size()];
                 Arrays.setAll(entriesArray, entries::get);
-                interps.put(field, new SplineInterpolator().interpolate(
+                interps.put(field.getName(), new SplineInterpolator().interpolate(
                         times.toArray(new double[0]),
                         entriesArray));
             }
