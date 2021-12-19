@@ -4,9 +4,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DoubleJsonField {
+public @interface DoubleSceneField {
     /**
-     * Path to JSON field.
+     * Path to field in Scene.java
      */
     String value();
 }
