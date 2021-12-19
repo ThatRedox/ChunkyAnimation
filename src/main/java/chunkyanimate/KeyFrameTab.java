@@ -177,6 +177,7 @@ public class KeyFrameTab implements RenderControlsTab {
 
     private static HBox centeredHBox(Node... nodes) {
         HBox out = new HBox(nodes);
+        out.setSpacing(10.0);
         out.setAlignment(Pos.CENTER_LEFT);
         return out;
     }
