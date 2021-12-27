@@ -1,4 +1,4 @@
-package chunkyanimate;
+package chunkyanimate.plugin;
 
 import se.llbit.chunky.Plugin;
 import se.llbit.chunky.main.Chunky;

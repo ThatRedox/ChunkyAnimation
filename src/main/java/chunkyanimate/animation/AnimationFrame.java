@@ -1,4 +1,4 @@
-package chunkyanimate;
+package chunkyanimate.animation;
 
 import chunkyanimate.reflection.BooleanJsonField;
 import chunkyanimate.reflection.DoubleField;

@@ -1,5 +1,7 @@
-package chunkyanimate;
+package chunkyanimate.plugin;
 
+import chunkyanimate.animation.AnimationFrame;
+import chunkyanimate.animation.AnimationKeyFrame;
 import chunkyanimate.reflection.DoubleField;
 import chunkyanimate.reflection.DoubleJsonField;
 import chunkyanimate.reflection.DoubleSceneField;
@@ -17,15 +19,12 @@ import javafx.stage.FileChooser;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.render.RenderControlsTab;
-import se.llbit.json.JsonObject;
 import se.llbit.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ListIterator;
-import java.util.SortedSet;
 
 public class KeyFrameTab implements RenderControlsTab {
     private final AnimationManager manager;
@@ -80,8 +79,8 @@ public class KeyFrameTab implements RenderControlsTab {
                 if (saveFile == null) return;
                 try {
                     manager.saveKeyframes(saveFile);
-                } catch (FileNotFoundException ex) {
-                    Log.error(ex);
+                } catch (IOException ex) {
+                    Log.error("Failed to save keyframes", ex);
                 }
             });
             saveLoadBox.getChildren().add(saveKeyframes);

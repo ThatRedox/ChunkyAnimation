@@ -1,4 +1,4 @@
-package chunkyanimate;
+package chunkyanimate.plugin;
 
 import javafx.geometry.Insets;
 import javafx.scene.Node;
