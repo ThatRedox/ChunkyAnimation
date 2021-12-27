@@ -93,6 +93,11 @@ public class AnimationFrame {
     @DoubleField("Camera focal length")
     public double cameraFocus;
 
+    @DoubleJsonField("exposure")
+    @DoubleSceneField("exposure")
+    @DoubleField("Camera Exposure")
+    public double cameraExposure;
+
     @DoubleJsonField("sun.altitude")
     @DoubleSceneField("sun.altitude")
     @DoubleField(value = "Sun altitude", inRadians = true)
@@ -264,6 +269,7 @@ public class AnimationFrame {
         scene.camera().setFoV(this.cameraFov);
         scene.camera().setDof(this.cameraDof);
         scene.camera().setSubjectDistance(this.cameraFocus);
+        scene.setExposure(this.cameraExposure);
 
         scene.sun().setAltitude(this.sunAltitude);
         scene.sun().setAzimuth(this.sunAzimuth);
