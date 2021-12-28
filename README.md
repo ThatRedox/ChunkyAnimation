@@ -7,7 +7,7 @@ a work in progress, but it is usable to make animations with json files generate
 [ChunkyAnimationAutomation](https://github.com/jackjt8/ChunkyAnimationAutomation).
 
 ## Download
-* [Latest build from master](https://nightly.link/ThatRedox/ChunkyAnimation/workflows/master/master/ChunkyAnimate.zip)
+* [Latest build from master](https://nightly.link/ThatRedox/ChunkyAnimation/workflows/master/master/ChunkyAnimatePlugin.zip)
 
 ## Installation
 ### Note: The latest version requires at least Chunky `2.4.0`
