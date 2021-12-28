@@ -40,6 +40,7 @@ public class AnimateLauncher {
 
         ChunkyOptions chunkyOptions = ChunkyOptions.getDefaults();
         chunkyOptions.renderThreads = numThreads;
+        Chunky.loadDefaultTextures();
         Chunky chunky = new Chunky(chunkyOptions);
 
         Field chunkyHeadless = chunky.getClass().getDeclaredField("headless");
@@ -85,7 +86,7 @@ public class AnimateLauncher {
         for (int i = 0; i < numFrames; i++) {
             System.out.printf("\n****************\nRendering frame %d out of %d.\n", i + 1, numFrames);
             try (TaskTracker.Task renderTask = taskTracker.task("Rendering")) {
-                RenderManager renderer = new DefaultRenderManager(chunky.getRenderContext(), true);
+                DefaultRenderManager renderer = new DefaultRenderManager(chunky.getRenderContext(), true);
                 renderer.setSceneProvider((SceneProvider) chunky.getSceneManager());
                 renderer.setSnapshotControl(new SnapshotControl() {
                     @Override
@@ -111,9 +112,11 @@ public class AnimateLauncher {
                 renderer.join();
                 renderer.shutdown();
 
-                scene.saveFrame(new File(outputDirectory, String.format("frame%05d%s",
+                renderer.bufferedScene.saveFrame(new File(outputDirectory, String.format("frame%05d%s",
                         i, scene.getOutputMode().getExtension())), TaskTracker.NONE, chunky.options.renderThreads);
             }
         }
+
+        System.exit(0);
     }
 }
