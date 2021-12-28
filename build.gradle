@@ -34,6 +34,8 @@ task pluginJar(type: Jar) {
     from {
         configurations.bundled.collect {it.isDirectory() ? it : zipTree(it) }
     }
+
+    with jar
 }
 
 task standaloneJar(type: Jar) {
@@ -47,4 +49,11 @@ task standaloneJar(type: Jar) {
         configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }
         configurations.provided.collect{it.isDirectory() ? it : zipTree(it) }
     }
+
+    with jar
+}
+
+task buildJar {
+    dependsOn pluginJar
+    dependsOn standaloneJar
 }
