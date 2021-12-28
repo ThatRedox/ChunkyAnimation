@@ -5,6 +5,7 @@ import chunkyanimate.reflection.DoubleField;
 import chunkyanimate.reflection.DoubleJsonField;
 import chunkyanimate.reflection.DoubleSceneField;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.json.Json;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;
 import se.llbit.log.Log;
@@ -203,6 +204,22 @@ public class AnimationFrame {
         return value;
     }
 
+    public static void writeJsonField(JsonValue value, JsonObject json, String field) {
+        JsonObject obj = json;
+        String[] levels = field.split("\\.");
+        for (int i = 0; i < levels.length-1; i++) {
+            String level = levels[i];
+            if (!obj.get(level).isUnknown()) {
+                obj = json.get(level).asObject();
+            } else {
+                JsonObject newObj = new JsonObject();
+                obj.set(level, newObj);
+                obj = newObj;
+            }
+        }
+        obj.set(levels[levels.length-1], value);
+    }
+
     public static double resolveSceneDoubleField(Scene scene, String field) {
         Object obj = scene;
         try {
@@ -242,6 +259,29 @@ public class AnimationFrame {
                 // Ignored
             }
         }
+    }
+
+    public JsonObject toJson() {
+        JsonObject obj = new JsonObject();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            try {
+                BooleanJsonField booleanField = field.getAnnotation(BooleanJsonField.class);
+                if (booleanField != null) {
+                    writeJsonField(Json.of((Boolean) field.get(this)), obj, booleanField.value());
+                    continue;
+                }
+
+                DoubleJsonField doubleField = field.getAnnotation(DoubleJsonField.class);
+                if (doubleField != null) {
+                    writeJsonField(Json.of((Double) field.get(this)), obj, doubleField.value());
+                    continue;
+                }
+            } catch (IllegalAccessException e) {
+                // Ignored
+            }
+        }
+        return obj;
     }
 
     public void apply(Scene scene) {
