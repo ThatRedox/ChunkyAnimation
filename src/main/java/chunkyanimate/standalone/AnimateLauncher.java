@@ -73,6 +73,7 @@ public class AnimateLauncher {
         }
 
         int numFrames = animationFrames.size();
+        long startTime = System.currentTimeMillis();
         TaskTracker taskTracker = new TaskTracker(new ConsoleProgressListener(),
                 (tracker, previous, name, size) -> new TaskTracker.Task(tracker, previous, name, size) {
                     @Override
@@ -84,7 +85,13 @@ public class AnimateLauncher {
                     }
                 });
         for (int i = 0; i < numFrames; i++) {
-            System.out.printf("\n****************\nRendering frame %d out of %d.\n", i + 1, numFrames);
+            String etaString = "N/A";
+            if (i > 0) {
+                long etaSeconds = (long) (((numFrames - i) * (System.currentTimeMillis() - startTime)) * (1.0 / numFrames));
+                etaString = String.format("%d h, %02d min", etaSeconds / 3600, (etaSeconds / 60) % 60);
+            }
+            System.out.printf("\n****************\nRendering frame %d out of %d. [ETA=%s]\n",
+                    i + 1, numFrames, etaString);
             try (TaskTracker.Task renderTask = taskTracker.task("Rendering")) {
                 DefaultRenderManager renderer = new DefaultRenderManager(chunky.getRenderContext(), true);
                 renderer.setSceneProvider((SceneProvider) chunky.getSceneManager());
