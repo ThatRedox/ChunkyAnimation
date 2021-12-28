@@ -87,7 +87,7 @@ public class AnimateLauncher {
         for (int i = 0; i < numFrames; i++) {
             String etaString = "N/A";
             if (i > 0) {
-                long etaSeconds = (long) (((numFrames - i) * (System.currentTimeMillis() - startTime)) * (1.0 / numFrames));
+                long etaSeconds = (((numFrames - i) * (System.currentTimeMillis() - startTime)) / (i * 1000L));
                 etaString = String.format("%d h, %02d min", etaSeconds / 3600, (etaSeconds / 60) % 60);
             }
             System.out.printf("\n****************\nRendering frame %d out of %d. [ETA=%s]\n",
