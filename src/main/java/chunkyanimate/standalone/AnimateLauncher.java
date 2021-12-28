@@ -22,41 +22,44 @@ public class AnimateLauncher {
         CommandLine cmd = parser.parse(options, args, true);
 
         if (cmd.hasOption("help")) {
-            String helpCmd = cmd.getOptionValue("help");
-            helpCmd = helpCmd == null ? "" : helpCmd;
-
-            String header = "Copyright (C) 2021 Redox & Contributors";
-            String footer = "\nThis program is free software; you can redistribute it and/or modify it under " +
-                    "the terms of the GNU General Public License as published by the Free Software Foundation, " +
-                    "license version 3.";
-            HelpFormatter formatter = new HelpFormatter();
-            switch (helpCmd) {
-                default:
-                case "":
-                    formatter.printHelp("java -jar ChunkyAnimate-Standalone.jar", header, options, footer);
-                    break;
-                case "r":
-                case "render":
-                    formatter.printHelp("java -jar ChunkyAnimation-Standalone.jar --render",
-                            header, AnimationRenderer.OPTIONS, footer);
-                    break;
-                case "t":
-                case "trim":
-                    formatter.printHelp("java -jar ChunkyAnimation-Standalone.jar --trim",
-                            header, FrameTrimmer.OPTIONS, footer);
-                    break;
-                case "k":
-                case "keyframe":
-//                    formatter.printHelp();
-                    break;
-            }
-            System.exit(0);
+            // Print help at bottom.
         } else if (cmd.hasOption("render")) {
             System.exit(AnimationRenderer.runRender(args));
         } else if (cmd.hasOption("trim")) {
             System.exit(FrameTrimmer.trimFrames(args));
         } else if (cmd.hasOption("keyframe")) {
-//            System.exit();
+            System.exit(FrameKeyframes.fromKeyframes(args));
         }
+
+        String helpCmd = cmd.getOptionValue("help");
+        helpCmd = helpCmd == null ? "" : helpCmd;
+
+        String header = "Copyright (C) 2021 Redox & Contributors";
+        String footer = "\nThis program is free software; you can redistribute it and/or modify it under " +
+                "the terms of the GNU General Public License as published by the Free Software Foundation, " +
+                "license version 3.";
+        HelpFormatter formatter = new HelpFormatter();
+        switch (helpCmd) {
+            default:
+            case "":
+                formatter.printHelp("java -jar ChunkyAnimate-Standalone.jar", header, options, footer);
+                break;
+            case "r":
+            case "render":
+                formatter.printHelp("java -jar ChunkyAnimation-Standalone.jar --render",
+                        header, AnimationRenderer.OPTIONS, footer);
+                break;
+            case "t":
+            case "trim":
+                formatter.printHelp("java -jar ChunkyAnimation-Standalone.jar --trim",
+                        header, FrameTrimmer.OPTIONS, footer);
+                break;
+            case "k":
+            case "keyframe":
+                formatter.printHelp("java -jar ChunkyAnimation-Standalone.jar --keyframe",
+                        header, FrameKeyframes.OPTIONS, footer);
+                break;
+        }
+        System.exit(0);
     }
 }
