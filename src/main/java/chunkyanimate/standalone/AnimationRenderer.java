@@ -12,10 +12,8 @@ import org.apache.commons.cli.Options;
 import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
-import se.llbit.chunky.renderer.ConsoleProgressListener;
-import se.llbit.chunky.renderer.DefaultRenderManager;
-import se.llbit.chunky.renderer.SceneProvider;
-import se.llbit.chunky.renderer.SnapshotControl;
+import se.llbit.chunky.renderer.*;
+import se.llbit.chunky.renderer.scene.PreviewRayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.util.TaskTracker;
 
@@ -51,6 +49,8 @@ public class AnimationRenderer {
         chunkyOptions.renderThreads = numThreads;
         Chunky.loadDefaultTextures();
         Chunky chunky = new Chunky(chunkyOptions);
+
+        Chunky.addRenderer(new PathTracingRenderer("AnimationPreview", "AnimationPreview", "AnimationPreviewRenderer", new PreviewRayTracer()));
 
         Field chunkyHeadless = chunky.getClass().getDeclaredField("headless");
         chunkyHeadless.setAccessible(true);

@@ -7,10 +7,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
-import se.llbit.json.JsonObject;
-import se.llbit.json.JsonParser;
-import se.llbit.json.JsonValue;
-import se.llbit.json.PrettyPrinter;
+import se.llbit.json.*;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -73,6 +70,7 @@ public class FrameKeyframes {
                     JsonObject inFrame = jparse.parse().asObject();
                     filterPaths(inFrame, frame, new String[0], knownVariables);
                 }
+                frame.set("keyframeName", Json.of(file.getName().split("\\.json")[0]));
 
                 double frameTime = frame.get("animationTime").doubleValue(Double.NaN);
                 while (Double.isNaN(frameTime) || !keyframes.get(Double.toString(frameTime)).isUnknown()) {
@@ -106,11 +104,7 @@ public class FrameKeyframes {
             }
 
             if (entry.getValue().isObject()) {
-                JsonObject tempDest = new JsonObject();
-                if (filterPaths(entry.getValue().asObject(), tempDest, newPath, knownPaths)) {
-                    dest.set(entry.getKey(), tempDest);
-                    anyHits = true;
-                }
+                anyHits |= filterPaths(entry.getValue().asObject(), dest, newPath, knownPaths);
             }
         }
         return anyHits;
