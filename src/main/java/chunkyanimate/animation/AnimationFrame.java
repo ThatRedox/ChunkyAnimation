@@ -95,7 +95,7 @@ public class AnimationFrame {
 
     @DoubleJsonField("exposure")
     @DoubleSceneField("exposure")
-    @DoubleField("Camera Exposure")
+    @DoubleField("Camera exposure")
     public double cameraExposure;
 
     @DoubleJsonField("sun.altitude")
