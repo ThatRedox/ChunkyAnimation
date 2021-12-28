@@ -27,7 +27,7 @@ jobs:
         with:
           name: ChunkyAnimatePlugin
           path: build/libs/ChunkyAnimate.jar
-      -name: Upload Standalone Jar
+      - name: Upload Standalone Jar
         uses: actions/upload-artifact@v2.2.2
         with:
           name: ChunkyAnimateStandalone
