@@ -39,8 +39,12 @@ public class KeyFrameTab implements RenderControlsTab {
     private final DoubleTextField[] keyframeFields =
             new DoubleTextField[AnimationKeyFrame.interpolatableFields().length];
 
+    private final TextField keyframeNameField = new TextField();
+    private final DoubleTextField keyframeTimeField = new DoubleTextField();
+
     private final ExecutorService calculationExecutor = Executors.newSingleThreadExecutor();
     private Map<String, PolynomialSplineFunction> interpCache = null;
+    private double interpMaxTime;
     private long previewStart = -1;
 
     private Scene scene = null;
@@ -65,7 +69,7 @@ public class KeyFrameTab implements RenderControlsTab {
             keyframeTable.getColumns().add(timeCol);
             keyframeTable.getSelectionModel().selectedItemProperty().addListener(
                     (observable, oldValue, newValue) -> {
-                        if (newValue != null) this.setKeyframeFields(newValue.getValue());
+                        if (newValue != null) this.setKeyframeFields(observable.getValue());
                     });
             box.getChildren().add(keyframeTable);
 
@@ -117,7 +121,6 @@ public class KeyFrameTab implements RenderControlsTab {
             HBox nameBox = new HBox(10.0);
             nameBox.setAlignment(Pos.CENTER_LEFT);
             nameBox.getChildren().add(new Label("Name:"));
-            TextField keyframeNameField = new TextField();
             keyframeNameField.setText("Keyframe");
             nameBox.getChildren().add(keyframeNameField);
             box.getChildren().add(nameBox);
@@ -125,7 +128,6 @@ public class KeyFrameTab implements RenderControlsTab {
             HBox timeBox = new HBox(10.0);
             timeBox.setAlignment(Pos.CENTER_LEFT);
             timeBox.getChildren().add(new Label("Time:"));
-            DoubleTextField keyframeTimeField = new DoubleTextField();
             keyframeTimeField.valueProperty().setValue(0);
             timeBox.getChildren().add(keyframeTimeField);
             box.getChildren().add(timeBox);
@@ -138,7 +140,13 @@ public class KeyFrameTab implements RenderControlsTab {
                 );
                 Platform.runLater(this::updateManager);
             });
-            box.getChildren().add(addKeyframeButton);
+            Button removeKeyframeButton = new Button("Remove Keyframe");
+            removeKeyframeButton.setOnAction(e -> {
+                manager.animationKeyFrames.remove(keyframeTimeField.valueProperty().doubleValue());
+                this.updateManager();
+            });
+
+            box.getChildren().add(centeredHBox(addKeyframeButton, removeKeyframeButton));
         }
 
         // Keyframe time slider
@@ -152,16 +160,19 @@ public class KeyFrameTab implements RenderControlsTab {
             timeAdjuster.setTooltip("Preview an animation time.");
 
             timeAdjuster.setOnMouseEntered(event -> {
-                timeAdjuster.setRange(0, manager.animationKeyFrames.lastDoubleKey());
-                calculationExecutor.submit(() -> {
-                    this.interpCache = AnimationUtils.interpolateKeyframes(manager.animationKeyFrames, (progress, total) -> true);
-                });
+                if (manager.animationKeyFrames.size() > 0) {
+                    timeAdjuster.setRange(0, manager.animationKeyFrames.lastDoubleKey());
+                    calculationExecutor.submit(() -> {
+                        this.interpMaxTime = manager.animationKeyFrames.lastDoubleKey();
+                        this.interpCache = AnimationUtils.interpolateKeyframes(manager.animationKeyFrames, (progress, total) -> true);
+                    });
+                }
             });
             timeAdjuster.valueProperty().addListener((observable, oldValue, newValue) -> calculationExecutor.submit(() -> {
                 if (this.interpCache != null && scene != null) {
                     AnimationFrame frame = new AnimationFrame(scene);
                     frame = AnimationUtils.applyInterpolation(interpCache,
-                            (Double) newValue, manager.animationKeyFrames.lastDoubleKey(), frame);
+                            (Double) newValue, this.interpMaxTime, frame);
                     frame.apply(scene);
                     scene.refresh();
                 }
@@ -182,8 +193,8 @@ public class KeyFrameTab implements RenderControlsTab {
                             }
 
                             currentTime = (System.currentTimeMillis() - previewStart) / 1000.0;
-                            if (currentTime >= manager.animationKeyFrames.lastDoubleKey()) {
-                                currentTime = manager.animationKeyFrames.lastDoubleKey();
+                            if (currentTime >= this.interpMaxTime) {
+                                currentTime = this.interpMaxTime;
                             }
 
                             if (this.interpCache == null || scene == null) {
@@ -195,7 +206,7 @@ public class KeyFrameTab implements RenderControlsTab {
 
                             AnimationFrame frame = new AnimationFrame(scene);
                             frame = AnimationUtils.applyInterpolation(interpCache,
-                                    currentTime, manager.animationKeyFrames.lastDoubleKey(), frame);
+                                    currentTime, this.interpMaxTime, frame);
 
                             try {
                                 synchronized (manager.renderUpdateEvent) {
@@ -206,7 +217,7 @@ public class KeyFrameTab implements RenderControlsTab {
                             } catch (InterruptedException e) {
                                 break;
                             }
-                        } while (currentTime < manager.animationKeyFrames.lastDoubleKey());
+                        } while (currentTime < this.interpMaxTime);
 
                         Platform.runLater(() -> previewPlayPause.setText("Play Preview"));
                     });
@@ -279,7 +290,22 @@ public class KeyFrameTab implements RenderControlsTab {
                 .ifPresent(e -> keyframeTable.getSelectionModel().select(e));
     }
 
-    private void setKeyframeFields(AnimationKeyFrame keyFrame) {
+    private void setKeyframeFields(Double2ObjectMap.Entry<AnimationKeyFrame> entry) {
+        AnimationKeyFrame keyFrame = entry.getValue();
+
+        this.keyframeNameField.setText(keyFrame.keyframeName);
+        this.keyframeNameField.setOnAction(event -> {
+            keyFrame.keyframeName = this.keyframeNameField.getText();
+            this.updateManager();
+        });
+
+        this.keyframeTimeField.valueProperty().setValue(entry.getDoubleKey());
+        this.keyframeTimeField.setOnAction(event -> {
+            manager.animationKeyFrames.remove(entry.getDoubleKey());
+            manager.animationKeyFrames.put(this.keyframeTimeField.valueProperty().doubleValue(), keyFrame);
+            this.updateManager();
+        });
+
         Field[] interpFields = AnimationKeyFrame.interpolatableFields();
         for (int i = 0; i < interpFields.length; i++) {
             String fieldName = interpFields[i].getName();

@@ -3,6 +3,7 @@ package chunkyanimate.plugin;
 import chunkyanimate.util.ObservableValue;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -25,6 +26,7 @@ public class AnimationTab implements RenderControlsTab {
 
         {
             HBox fromKeyFramesBox = new HBox(10);
+            fromKeyFramesBox.alignmentProperty().set(Pos.CENTER_LEFT);
             fromKeyFramesBox.getChildren().add(new Label("Framerate:"));
 
             DoubleTextField framerateField = new DoubleTextField();
