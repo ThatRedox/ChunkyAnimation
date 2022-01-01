@@ -3,10 +3,9 @@ package chunkyanimate.plugin;
 import chunkyanimate.animation.AnimationFrame;
 import chunkyanimate.animation.AnimationKeyFrame;
 import chunkyanimate.animation.AnimationUtils;
+import chunkyanimate.util.ObservableValue;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectSortedMap;
-import javafx.application.Platform;
-import javafx.scene.control.Label;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.log.Log;
@@ -19,11 +18,14 @@ public class AnimationManager {
 
     private Chunky chunky = null;
     private boolean animating = false;
-    private int frameCount = 0;
-    private final ArrayList<AnimationFrame> animationFrames = new ArrayList<>();
     public final Double2ObjectSortedMap<AnimationKeyFrame> animationKeyFrames = new Double2ObjectRBTreeMap<>();
 
-    private Label progressLabel = null;
+    private final ObservableValue<Integer> currentFrameValue = new ObservableValue<>(0);
+    public final ObservableValue.ObservableInterface<Integer> currentFrame = currentFrameValue.getObservableInterface();
+
+    private final ArrayList<AnimationFrame> animationFrames = new ArrayList<>();
+    private final ObservableValue<Integer> totalFramesValue = new ObservableValue<>(0);
+    public final ObservableValue.ObservableInterface<Integer> totalFrames =  totalFramesValue.getObservableInterface();
 
     public void setChunky(Chunky chunky) {
         this.chunky = chunky;
@@ -67,33 +69,30 @@ public class AnimationManager {
         scene.saveFrame(saveFile, TaskTracker.NONE, chunky.getRenderController().getContext().numRenderThreads());
     }
 
-    public void updateLabel() {
-        if (progressLabel != null) {
-            Platform.runLater(() -> progressLabel.setText(String.format("Frame %d / %d",
-                    frameCount, animationFrames.size())));
-        }
-    }
-
     public void frameComplete() {
         if (animating) {
             chunky.getSceneManager().getScene().pauseRender();
-            saveFrame(this.frameCount);
-            this.frameCount++;
 
-            updateLabel();
+            int frameNumber = this.currentFrameValue.getValue();
+            saveFrame(frameNumber);
+            currentFrameValue.setValue(frameNumber+1);
+
             runUntilRender();
         }
     }
 
     public void startAnimation() {
         this.animating = true;
-        this.frameCount = 0;
-        updateLabel();
+        this.currentFrameValue.setValue(0);
         runUntilRender();
     }
 
     public void stopAnimation() {
         this.animating = false;
+    }
+
+    public boolean isAnimating() {
+        return this.animating;
     }
 
     public void runUntilRender() {
@@ -102,8 +101,8 @@ public class AnimationManager {
             scene.haltRender();
             scene.forceReset();
 
-            if (frameCount < animationFrames.size()) {
-                AnimationFrame frame = animationFrames.get(frameCount);
+            if (currentFrameValue.getValue() < animationFrames.size()) {
+                AnimationFrame frame = animationFrames.get(currentFrameValue.getValue());
                 if (frame != null) {
                     frame.apply(scene);
                     scene.startRender();
@@ -117,23 +116,24 @@ public class AnimationManager {
 
     public void fromFolder(File folder) {
         animating = false;
-        frameCount = 0;
+        currentFrameValue.setValue(0);
         animationFrames.clear();
-        updateLabel();
+        totalFramesValue.setValue(0);
 
         AnimationUtils.loadFramesFromFolder(
                 folder,
                 animationFrames,
                 chunky.getSceneManager().getScene()
         );
-        updateLabel();
+
+        totalFramesValue.setValue(animationFrames.size());
     }
 
     public void fromKeyFrames(double framerate) {
         animating = false;
-        frameCount = 0;
+        currentFrameValue.setValue(0);
         animationFrames.clear();
-        updateLabel();
+        totalFramesValue.setValue(0);
 
         AnimationUtils.loadFramesFromKeyframes(
                 animationKeyFrames,
@@ -141,10 +141,7 @@ public class AnimationManager {
                 animationFrames,
                 chunky.getSceneManager().getScene()
         );
-        updateLabel();
-    }
 
-    public void setProgressLabel(Label label) {
-        this.progressLabel = label;
+        totalFramesValue.setValue(animationFrames.size());
     }
 }

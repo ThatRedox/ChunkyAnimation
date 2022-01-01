@@ -1,5 +1,7 @@
 package chunkyanimate.plugin;
 
+import chunkyanimate.util.ObservableValue;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -15,6 +17,7 @@ import java.io.File;
 
 public class AnimationTab implements RenderControlsTab {
     private final VBox box;
+    private long renderStart = 0;
 
     public AnimationTab(AnimationManager manager) {
         box = new VBox(10.0);
@@ -52,8 +55,34 @@ public class AnimationTab implements RenderControlsTab {
         box.getChildren().add(stopAnimationButton);
 
         Label progressLabel = new Label("Frame 0 / 0");
-        manager.setProgressLabel(progressLabel);
         box.getChildren().add(progressLabel);
+
+        Label etaLabel = new Label("ETA: N/A");
+        box.getChildren().add(etaLabel);
+
+        ObservableValue.ChangeListener updateListener = v -> {
+            int currentFrame = manager.currentFrame.getValue();
+            int totalFrames = manager.totalFrames.getValue();
+            long currentTime = System.currentTimeMillis();
+
+            if (currentFrame == 0) {
+                renderStart = System.currentTimeMillis();
+            }
+
+            Platform.runLater(() -> {
+                progressLabel.setText(String.format("Frame %d / %d", currentFrame, totalFrames));
+                if (manager.isAnimating() && manager.currentFrame.getValue() > 1) {
+                    long etaSeconds = ((totalFrames - currentFrame) * (currentTime - renderStart)) / (currentFrame * 1000L);
+                    int etaMinutes = (int) ((etaSeconds / 60) % 60);
+                    int etaHours = (int) (etaSeconds / 3600);
+                    etaLabel.setText(String.format("ETA: %02d:%02d:%02d", etaHours, etaMinutes, etaSeconds % 60));
+                } else {
+                    etaLabel.setText("ETA: N/A");
+                }
+            });
+        };
+        manager.currentFrame.addListener(updateListener);
+        manager.totalFrames.addListener(updateListener);
     }
 
     @Override
