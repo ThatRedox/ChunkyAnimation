@@ -41,6 +41,7 @@ public class KeyFrameTab implements RenderControlsTab {
 
     private final ExecutorService calculationExecutor = Executors.newSingleThreadExecutor();
     private Map<String, PolynomialSplineFunction> interpCache = null;
+    private long previewStart = -1;
 
     private Scene scene = null;
 
@@ -143,6 +144,7 @@ public class KeyFrameTab implements RenderControlsTab {
         // Keyframe time slider
         {
             box.getChildren().add(new Separator());
+
             DoubleAdjuster timeAdjuster = new DoubleAdjuster();
             timeAdjuster.setName("Time");
             timeAdjuster.setRange(0, 1);
@@ -164,8 +166,56 @@ public class KeyFrameTab implements RenderControlsTab {
                     scene.refresh();
                 }
             }));
-
             box.getChildren().add(timeAdjuster);
+
+            Button previewPlayPause = new Button("Play Preview");
+            previewPlayPause.setOnAction(event -> {
+                if (this.previewStart == -1) {
+                    Platform.runLater(() -> previewPlayPause.setText("Pause Preview"));
+                    this.previewStart = System.currentTimeMillis();
+                    calculationExecutor.submit(() -> {
+                        double currentTime;
+                        do {
+                            long previewStart = this.previewStart;
+                            if (previewStart == -1) {
+                                break;
+                            }
+
+                            currentTime = (System.currentTimeMillis() - previewStart) / 1000.0;
+                            if (currentTime >= manager.animationKeyFrames.lastDoubleKey()) {
+                                currentTime = manager.animationKeyFrames.lastDoubleKey();
+                            }
+
+                            if (this.interpCache == null || scene == null) {
+                                break;
+                            }
+
+                            double finalCurrentTime = currentTime;
+                            Platform.runLater(() -> timeAdjuster.set(finalCurrentTime));
+
+                            AnimationFrame frame = new AnimationFrame(scene);
+                            frame = AnimationUtils.applyInterpolation(interpCache,
+                                    currentTime, manager.animationKeyFrames.lastDoubleKey(), frame);
+
+                            try {
+                                synchronized (manager.renderUpdateEvent) {
+                                    frame.apply(scene);
+                                    scene.refresh();
+                                    manager.renderUpdateEvent.wait(1000);
+                                }
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        } while (currentTime < manager.animationKeyFrames.lastDoubleKey());
+
+                        Platform.runLater(() -> previewPlayPause.setText("Play Preview"));
+                    });
+                } else {
+                    Platform.runLater(() -> previewPlayPause.setText("Play Preview"));
+                    this.previewStart = -1;
+                }
+            });
+            box.getChildren().add(previewPlayPause);
         }
 
         // Keyframe editor

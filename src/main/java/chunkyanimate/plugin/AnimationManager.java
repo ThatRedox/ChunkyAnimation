@@ -7,6 +7,8 @@ import chunkyanimate.util.ObservableValue;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectSortedMap;
 import se.llbit.chunky.main.Chunky;
+import se.llbit.chunky.renderer.RenderMode;
+import se.llbit.chunky.renderer.RenderStatusListener;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
@@ -15,6 +17,7 @@ import java.io.*;
 import java.util.*;
 
 public class AnimationManager {
+    public final Object renderUpdateEvent = new Object();
 
     private Chunky chunky = null;
     private boolean animating = false;
@@ -29,6 +32,23 @@ public class AnimationManager {
 
     public void setChunky(Chunky chunky) {
         this.chunky = chunky;
+        this.chunky.getRenderController().getRenderManager().addRenderListener(new RenderStatusListener() {
+            @Override
+            public void setRenderTime(long l) {
+                synchronized (renderUpdateEvent) {
+                    renderUpdateEvent.notifyAll();
+                }
+            }
+
+            @Override
+            public void setSamplesPerSecond(int i) {}
+
+            @Override
+            public void setSpp(int i) {}
+
+            @Override
+            public void renderStateChanged(RenderMode renderMode) {}
+        });
     }
 
     public void saveKeyframes(File out) throws IOException {
