@@ -2,6 +2,7 @@ package chunkyanimate.plugin;
 
 import chunkyanimate.animation.AnimationFrame;
 import chunkyanimate.animation.AnimationKeyFrame;
+import chunkyanimate.animation.AnimationUtils;
 import chunkyanimate.reflection.DoubleField;
 import chunkyanimate.reflection.DoubleJsonField;
 import chunkyanimate.reflection.DoubleSceneField;
@@ -16,15 +17,19 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.ui.DoubleAdjuster;
 import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 import se.llbit.log.Log;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class KeyFrameTab implements RenderControlsTab {
     private final AnimationManager manager;
@@ -33,6 +38,9 @@ public class KeyFrameTab implements RenderControlsTab {
 
     private final DoubleTextField[] keyframeFields =
             new DoubleTextField[AnimationKeyFrame.interpolatableFields().length];
+
+    private final ExecutorService calculationExecutor = Executors.newSingleThreadExecutor();
+    private Map<String, PolynomialSplineFunction> interpCache = null;
 
     private Scene scene = null;
 
@@ -130,6 +138,34 @@ public class KeyFrameTab implements RenderControlsTab {
                 Platform.runLater(this::updateManager);
             });
             box.getChildren().add(addKeyframeButton);
+        }
+
+        // Keyframe time slider
+        {
+            box.getChildren().add(new Separator());
+            DoubleAdjuster timeAdjuster = new DoubleAdjuster();
+            timeAdjuster.setName("Time");
+            timeAdjuster.setRange(0, 1);
+            timeAdjuster.clampBoth();
+            timeAdjuster.setTooltip("Preview an animation time.");
+
+            timeAdjuster.setOnMouseEntered(event -> {
+                timeAdjuster.setRange(0, manager.animationKeyFrames.lastDoubleKey());
+                calculationExecutor.submit(() -> {
+                    this.interpCache = AnimationUtils.interpolateKeyframes(manager.animationKeyFrames, (progress, total) -> true);
+                });
+            });
+            timeAdjuster.valueProperty().addListener((observable, oldValue, newValue) -> calculationExecutor.submit(() -> {
+                if (this.interpCache != null && scene != null) {
+                    AnimationFrame frame = new AnimationFrame(scene);
+                    frame = AnimationUtils.applyInterpolation(interpCache,
+                            (Double) newValue, manager.animationKeyFrames.lastDoubleKey(), frame);
+                    frame.apply(scene);
+                    scene.refresh();
+                }
+            }));
+
+            box.getChildren().add(timeAdjuster);
         }
 
         // Keyframe editor

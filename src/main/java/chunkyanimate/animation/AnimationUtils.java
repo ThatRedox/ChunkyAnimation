@@ -16,6 +16,7 @@ import se.llbit.math.QuickMath;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnimationUtils {
     public static JsonObject saveKeyframesJson(Double2ObjectSortedMap<AnimationKeyFrame> keyframes) {
@@ -84,23 +85,13 @@ public class AnimationUtils {
         }
     }
 
-    public static void loadFramesFromKeyframes(Double2ObjectSortedMap<AnimationKeyFrame> keyframes, double framerate, ArrayList<AnimationFrame> frames, Scene scene) {
-        loadFramesFromKeyframes(keyframes, framerate, frames, scene, (progress, total) -> true);
-    }
-
-    public static void loadFramesFromKeyframes(Double2ObjectSortedMap<AnimationKeyFrame> keyframes, double framerate, ArrayList<AnimationFrame> frames, Scene scene, ProgressListener progress) {
-        if (framerate == 0) return;
-        frames.clear();
-
+    public static Map<String, PolynomialSplineFunction> interpolateKeyframes(Double2ObjectSortedMap<AnimationKeyFrame> keyframes, ProgressListener progress) {
+        Map<String, PolynomialSplineFunction> interps = new HashMap<>();
         double endTime = keyframes.lastDoubleKey();
-        int numFrames = (int) (endTime * framerate) + 1;
-        if (numFrames < 1) return;
-
         int numKeyFrames = keyframes.size();
-        int progressTotal = AnimationKeyFrame.interpolatableFields().length + numFrames;
+        int progressTotal = AnimationKeyFrame.interpolatableFields().length;
         int progressCount = 0;
 
-        Map<String, PolynomialSplineFunction> interps = new HashMap<>();
         DoubleArrayList times = new DoubleArrayList(numKeyFrames);
         ArrayList<Double> entries = new ArrayList<>(numKeyFrames);
         Field[] fields = AnimationKeyFrame.interpolatableFields();
@@ -136,24 +127,49 @@ public class AnimationUtils {
                         entriesArray));
             }
 
-            if (!progress.accept(++progressCount, progressTotal)) return;
+            if (!progress.accept(++progressCount, progressTotal)) return new HashMap<>();
         }
+
+        return interps;
+    }
+
+    public static void loadFramesFromKeyframes(Double2ObjectSortedMap<AnimationKeyFrame> keyframes, double framerate, ArrayList<AnimationFrame> frames, Scene scene) {
+        loadFramesFromKeyframes(keyframes, framerate, frames, scene, (progress, total) -> true);
+    }
+
+    public static void loadFramesFromKeyframes(Double2ObjectSortedMap<AnimationKeyFrame> keyframes, double framerate, ArrayList<AnimationFrame> frames, Scene scene, ProgressListener progress) {
+        if (framerate == 0) return;
+        frames.clear();
+
+        double endTime = keyframes.lastDoubleKey();
+        int numFrames = (int) (endTime * framerate) + 1;
+        if (numFrames < 1) return;
+
+        int progressTotal = AnimationKeyFrame.interpolatableFields().length + numFrames;
+        int progressCount = AnimationKeyFrame.interpolatableFields().length;
+
+        Map<String, PolynomialSplineFunction> interps =
+                interpolateKeyframes(keyframes, (prog, total) -> progress.accept(prog, progressTotal));
 
         frames.ensureCapacity(numFrames);
         AnimationFrame frame = new AnimationFrame(scene);
         for (int i = 0; i < numFrames; i++) {
-            double frameTime = QuickMath.clamp(i / framerate, 0, endTime);
-            frame = new AnimationFrame(field -> {
-                if (interps.containsKey(field)) {
-                    return OptionalDouble.of(interps.get(field).value(frameTime));
-                } else {
-                    return OptionalDouble.empty();
-                }
-            }, frame);
+            frame = applyInterpolation(interps, i / framerate, endTime, frame);
             frames.add(frame);
 
             if (!progress.accept(++progressCount, progressTotal)) return;
         }
+    }
+
+    public static AnimationFrame applyInterpolation(Map<String, PolynomialSplineFunction> interp, double time, double endTime, AnimationFrame prev) {
+        double safeTime = QuickMath.clamp(time, 0, endTime);
+        return new AnimationFrame(field -> {
+            if (interp.containsKey(field)) {
+                return OptionalDouble.of(interp.get(field).value(safeTime));
+            } else {
+                return OptionalDouble.empty();
+            }
+        }, prev);
     }
 
     public interface ProgressListener {
