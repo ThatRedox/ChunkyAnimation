@@ -1,12 +1,12 @@
-package chunkyanimate.reflection;
+package dev.thatredox.chunky.animate.reflection;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DoubleSceneField {
+public @interface DoubleJsonField {
     /**
-     * Path to field in Scene.java
+     * Path to JSON field.
      */
     String value();
 }

@@ -1,12 +1,13 @@
-package chunkyanimate.plugin;
+package dev.thatredox.chunky.animate.plugin;
 
-import chunkyanimate.animation.AnimationFrame;
-import chunkyanimate.animation.AnimationKeyFrame;
-import chunkyanimate.animation.AnimationUtils;
-import chunkyanimate.util.ObservableValue;
+import dev.thatredox.chunky.animate.animation.AnimationFrame;
+import dev.thatredox.chunky.animate.animation.AnimationKeyFrame;
+import dev.thatredox.chunky.animate.animation.AnimationUtils;
+import dev.thatredox.chunky.animate.util.ObservableValue;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectSortedMap;
 import se.llbit.chunky.main.Chunky;
+import se.llbit.chunky.renderer.RenderManager;
 import se.llbit.chunky.renderer.RenderMode;
 import se.llbit.chunky.renderer.RenderStatusListener;
 import se.llbit.chunky.renderer.scene.Scene;
@@ -49,6 +50,10 @@ public class AnimationManager {
             @Override
             public void renderStateChanged(RenderMode renderMode) {}
         });
+    }
+
+    public RenderManager getRenderManager() {
+        return this.chunky.getRenderController().getRenderManager();
     }
 
     public void saveKeyframes(File out) throws IOException {

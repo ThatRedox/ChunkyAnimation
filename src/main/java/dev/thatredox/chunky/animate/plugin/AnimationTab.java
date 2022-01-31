@@ -1,15 +1,17 @@
-package chunkyanimate.plugin;
+package dev.thatredox.chunky.animate.plugin;
 
-import chunkyanimate.util.ObservableValue;
+import dev.thatredox.chunky.animate.util.ObservableValue;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import se.llbit.chunky.renderer.SnapshotControl;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.render.RenderControlsTab;
@@ -19,6 +21,8 @@ import java.io.File;
 public class AnimationTab implements RenderControlsTab {
     private final VBox box;
     private long renderStart = 0;
+    private SnapshotControl prevControl = null;
+    private boolean needSave = true;
 
     public AnimationTab(AnimationManager manager) {
         box = new VBox(10.0);
@@ -49,7 +53,10 @@ public class AnimationTab implements RenderControlsTab {
         box.getChildren().add(directoryButton);
 
         Button startAnimationButton = new Button("Start Animation");
-        startAnimationButton.setOnAction(e -> manager.startAnimation());
+        startAnimationButton.setOnAction(e -> {
+            manager.startAnimation();
+            needSave = true;
+        });
         box.getChildren().add(startAnimationButton);
 
         Button stopAnimationButton = new Button("Stop Animation");
@@ -61,6 +68,34 @@ public class AnimationTab implements RenderControlsTab {
 
         Label etaLabel = new Label("ETA: N/A");
         box.getChildren().add(etaLabel);
+
+        CheckBox noSave = new CheckBox("Don't resave scene.");
+        noSave.selectedProperty().addListener(((observable, oldValue, isSelected) -> {
+            if (!isSelected) {
+                if (prevControl == null) {
+                    prevControl = SnapshotControl.DEFAULT;
+                }
+                manager.getRenderManager().setSnapshotControl(prevControl);
+            } else {
+                prevControl = manager.getRenderManager().getSnapshotControl();
+                manager.getRenderManager().setSnapshotControl(new SnapshotControl() {
+                    @Override
+                    public boolean saveSnapshot(Scene scene, int nextSpp) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean saveRenderDump(Scene scene, int nextSpp) {
+                        if (needSave) {
+                            needSave = false;
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+            }
+        }));
+        box.getChildren().add(noSave);
 
         ObservableValue.ChangeListener updateListener = v -> {
             int currentFrame = manager.currentFrame.getValue();

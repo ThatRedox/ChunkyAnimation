@@ -28,7 +28,7 @@ dependencies {
 
 task pluginJar(type: Jar) {
     manifest {
-        attributes "Main-Class": "chunkyanimate.plugin.ChunkyAnimate"
+        attributes "Main-Class": "dev.thatredox.chunky.animate.plugin.ChunkyAnimate"
     }
 
     from {
@@ -39,10 +39,10 @@ task pluginJar(type: Jar) {
 }
 
 task standaloneJar(type: Jar) {
-    archiveName "ChunkyAnimate-Standalone.jar"
+    archiveFileName = "ChunkyAnimate-Standalone.jar"
 
     manifest {
-        attributes "Main-Class": "chunkyanimate.standalone.AnimateLauncher"
+        attributes "Main-Class": "dev.thatredox.chunky.animate.standalone.AnimateLauncher"
     }
 
     from {

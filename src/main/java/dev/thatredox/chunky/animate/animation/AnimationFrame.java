@@ -1,9 +1,9 @@
-package chunkyanimate.animation;
+package dev.thatredox.chunky.animate.animation;
 
-import chunkyanimate.reflection.BooleanJsonField;
-import chunkyanimate.reflection.DoubleField;
-import chunkyanimate.reflection.DoubleJsonField;
-import chunkyanimate.reflection.DoubleSceneField;
+import dev.thatredox.chunky.animate.reflection.BooleanJsonField;
+import dev.thatredox.chunky.animate.reflection.DoubleField;
+import dev.thatredox.chunky.animate.reflection.DoubleJsonField;
+import dev.thatredox.chunky.animate.reflection.DoubleSceneField;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.json.Json;
 import se.llbit.json.JsonObject;

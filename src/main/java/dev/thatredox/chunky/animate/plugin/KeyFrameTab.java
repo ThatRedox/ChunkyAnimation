@@ -1,11 +1,11 @@
-package chunkyanimate.plugin;
+package dev.thatredox.chunky.animate.plugin;
 
-import chunkyanimate.animation.AnimationFrame;
-import chunkyanimate.animation.AnimationKeyFrame;
-import chunkyanimate.animation.AnimationUtils;
-import chunkyanimate.reflection.DoubleField;
-import chunkyanimate.reflection.DoubleJsonField;
-import chunkyanimate.reflection.DoubleSceneField;
+import dev.thatredox.chunky.animate.animation.AnimationFrame;
+import dev.thatredox.chunky.animate.animation.AnimationKeyFrame;
+import dev.thatredox.chunky.animate.animation.AnimationUtils;
+import dev.thatredox.chunky.animate.reflection.DoubleField;
+import dev.thatredox.chunky.animate.reflection.DoubleJsonField;
+import dev.thatredox.chunky.animate.reflection.DoubleSceneField;
 import it.unimi.dsi.fastutil.doubles.*;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleWrapper;

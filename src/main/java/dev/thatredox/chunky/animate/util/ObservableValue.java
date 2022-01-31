@@ -1,4 +1,4 @@
-package chunkyanimate.util;
+package dev.thatredox.chunky.animate.util;
 
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;

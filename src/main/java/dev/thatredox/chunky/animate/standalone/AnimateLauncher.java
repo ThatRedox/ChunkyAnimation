@@ -1,4 +1,4 @@
-package chunkyanimate.standalone;
+package dev.thatredox.chunky.animate.standalone;
 
 import org.apache.commons.cli.*;
 

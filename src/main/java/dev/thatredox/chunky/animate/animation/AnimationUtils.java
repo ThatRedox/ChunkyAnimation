@@ -1,4 +1,4 @@
-package chunkyanimate.animation;
+package dev.thatredox.chunky.animate.animation;
 
 import it.unimi.dsi.fastutil.doubles.Double2ObjectMap;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectSortedMap;
@@ -16,7 +16,6 @@ import se.llbit.math.QuickMath;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AnimationUtils {
     public static JsonObject saveKeyframesJson(Double2ObjectSortedMap<AnimationKeyFrame> keyframes) {

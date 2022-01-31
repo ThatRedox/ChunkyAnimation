@@ -1,8 +1,8 @@
-package chunkyanimate.standalone;
+package dev.thatredox.chunky.animate.standalone;
 
-import chunkyanimate.animation.AnimationFrame;
-import chunkyanimate.reflection.BooleanJsonField;
-import chunkyanimate.reflection.DoubleJsonField;
+import dev.thatredox.chunky.animate.animation.AnimationFrame;
+import dev.thatredox.chunky.animate.reflection.BooleanJsonField;
+import dev.thatredox.chunky.animate.reflection.DoubleJsonField;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;

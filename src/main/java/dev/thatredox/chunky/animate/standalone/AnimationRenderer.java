@@ -1,8 +1,8 @@
-package chunkyanimate.standalone;
+package dev.thatredox.chunky.animate.standalone;
 
-import chunkyanimate.animation.AnimationFrame;
-import chunkyanimate.animation.AnimationKeyFrame;
-import chunkyanimate.animation.AnimationUtils;
+import dev.thatredox.chunky.animate.animation.AnimationFrame;
+import dev.thatredox.chunky.animate.animation.AnimationKeyFrame;
+import dev.thatredox.chunky.animate.animation.AnimationUtils;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectSortedMap;
 import org.apache.commons.cli.CommandLine;

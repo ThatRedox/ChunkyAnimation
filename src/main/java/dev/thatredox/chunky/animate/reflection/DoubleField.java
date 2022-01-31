@@ -1,4 +1,4 @@
-package chunkyanimate.reflection;
+package dev.thatredox.chunky.animate.reflection;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

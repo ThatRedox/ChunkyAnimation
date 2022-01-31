@@ -1,4 +1,4 @@
-package chunkyanimate.plugin;
+package dev.thatredox.chunky.animate.plugin;
 
 import se.llbit.chunky.Plugin;
 import se.llbit.chunky.main.Chunky;
