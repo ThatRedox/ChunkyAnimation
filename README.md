@@ -31,12 +31,17 @@ Note 1 - Use `Save Keyframes` and `Load keyframes` to resume progress.
 
 Note 2 - Using `From Scene` and then `Add Keyframe` creates blank frames.
 
+
 To render an animation in the `Animation Controls` tab:
 
-1a. If using the `Keyframe Editor` make sure to load the keyframes first if none are present.
-1b. If using externally generated json files click on `Load Frames From Folder`.
+  1a. If using the `Keyframe Editor` make sure to load the keyframes first if none are present.
+
+  1b. If using externally generated json files click on `Load Frames From Folder`.
+
 2. Press `From Keyframes`
+
 3. Choose the Framerate.
+
 4. Click `Start animation` to start automatically rendering the animation frames. Click
 `Stop Animation` to stop animating. The render reset button will **NOT** stop animating.
 ![image](https://user-images.githubusercontent.com/42661490/131207357-d5a5fe74-8bc5-4a95-be53-2922bfa41f81.png)
@@ -50,10 +55,11 @@ To convert the frames into a video you may use something like ffmpeg. Below is a
 ffmpeg -r 30 -f image2 -s 1920x1080 -i frame%05d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p test.mp4
 ```
 
+```
 -i is the file name with %05d defining the suffix. (ie frame00002, frame00003, etc.)
 -r is the framerate (fps)
 -crf is the quality, lower means better quality, 15-25 is usually good
 -s is the resolution
 -pix_fmt yuv420p specifies the pixel format, change this as needed
-
+```
 
