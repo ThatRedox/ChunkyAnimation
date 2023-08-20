@@ -131,7 +131,7 @@ public class AnimationRenderer {
                 renderer.shutdown();
 
                 renderer.bufferedScene.saveFrame(new File(outputDirectory, String.format("frame%05d%s",
-                        i, scene.getOutputMode().getExtension())), TaskTracker.NONE, chunky.options.renderThreads);
+                        i, scene.getOutputMode().getExtension())), TaskTracker.NONE);
             }
         }
 
