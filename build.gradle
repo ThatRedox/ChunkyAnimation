@@ -48,6 +48,7 @@ tasks.register('pluginJar', Jar) {
 
 tasks.register('standaloneJar', Jar) {
     archiveFileName = "ChunkyAnimate-Standalone.jar"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes "Main-Class": "dev.thatredox.chunky.animate.standalone.AnimateLauncher"
