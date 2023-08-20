@@ -16,33 +16,30 @@ import java.util.OptionalDouble;
 import java.util.function.Function;
 
 public class AnimationFrame {
-    @DoubleJsonField("fogDensity")
-    @DoubleSceneField("fogDensity")
+    @DoubleJsonField("fog.uniformDensity")
+    @DoubleSceneField("fog.uniformDensity")
     @DoubleField("Fog density")
     public double fogDensity;
 
-    @DoubleJsonField("skyFogDensity")
-    @DoubleSceneField("skyFogDensity")
+    @DoubleJsonField("fog.skyFogDensity")
+    @DoubleSceneField("fog.skyFogDensity")
     @DoubleField("Sky fog blending")
     public double skyFogDensity;
 
-    @DoubleJsonField("fogColor.red")
-    @DoubleSceneField("fogColor.x")
+    @DoubleJsonField("fog.fogColor.red")
+    @DoubleSceneField("fog.fogColor.x")
     @DoubleField(value = "Fog color (R)", sortOrder = "fogColor.0")
     public double fogColorR;
 
-    @DoubleJsonField("fogColor.green")
-    @DoubleSceneField("fogColor.y")
+    @DoubleJsonField("fog.fogColor.green")
+    @DoubleSceneField("fog.fogColor.y")
     @DoubleField(value = "Fog color (G)", sortOrder = "fogColor.1")
     public double fogColorG;
 
-    @DoubleJsonField("fogColor.blue")
-    @DoubleSceneField("fogColor.z")
+    @DoubleJsonField("fog.fogColor.blue")
+    @DoubleSceneField("fog.fogColor.z")
     @DoubleField(value = "Fog color (B)", sortOrder = "fogColor.2")
     public double fogColorB;
-
-    @BooleanJsonField("waterWorldEnabled")
-    public boolean waterWorldEnabled;
 
     @DoubleJsonField("waterWorldHeight")
     @DoubleSceneField("waterPlaneHeight")
@@ -129,12 +126,6 @@ public class AnimationFrame {
     @DoubleField(value = "Sun color (B)", sortOrder = "sunColor.2")
     public double sunColorB;
 
-    @BooleanJsonField("sun.drawTexture")
-    public boolean sunDraw;
-
-    @BooleanJsonField("sky.cloudsEnabled")
-    public boolean cloudsEnabled;
-
     @DoubleJsonField("sky.cloudOffset.x")
     @DoubleSceneField("sky.cloudOffset.x")
     @DoubleField(value = "Cloud offset (X)", sortOrder = "cloudOffset.0")
@@ -156,9 +147,6 @@ public class AnimationFrame {
     public double animationTime;
 
     public AnimationFrame(Scene scene) {
-        this.waterWorldEnabled = scene.isWaterPlaneEnabled();
-        this.sunDraw = scene.sun().drawTexture();
-        this.cloudsEnabled = scene.sky().cloudsEnabled();
 
         for (Field field : this.getClass().getDeclaredFields()) {
             try {
@@ -293,7 +281,6 @@ public class AnimationFrame {
                 this.fogColorB
         ));
 
-        scene.setWaterPlaneEnabled(this.waterWorldEnabled);
         scene.setWaterPlaneHeight(this.waterWorldHeight);
 
         scene.camera().setPosition(new Vector3(
@@ -319,9 +306,7 @@ public class AnimationFrame {
                 this.sunColorG,
                 this.sunColorB
         ));
-        scene.sun().setDrawTexture(this.sunDraw);
 
-        scene.sky().setCloudsEnabled(this.cloudsEnabled);
         scene.sky().setCloudXOffset(this.cloudOffsetX);
         scene.sky().setCloudYOffset(this.cloudOffsetY);
         scene.sky().setCloudZOffset(this.cloudOffsetZ);
