@@ -1,4 +1,6 @@
-apply plugin: 'java'
+plugins {
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+}
 
 repositories {
     mavenLocal()
@@ -26,19 +28,25 @@ dependencies {
     bundled 'commons-cli:commons-cli:1.5.0'
 }
 
-task pluginJar(type: Jar) {
+javafx {
+    version = '17'
+    modules = ['javafx.base', 'javafx.controls', 'javafx.fxml']
+    configuration = 'provided'
+}
+
+tasks.register('pluginJar', Jar) {
     manifest {
         attributes "Main-Class": "dev.thatredox.chunky.animate.plugin.ChunkyAnimate"
     }
 
     from {
-        configurations.bundled.collect {it.isDirectory() ? it : zipTree(it) }
+        configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
     with jar
 }
 
-task standaloneJar(type: Jar) {
+tasks.register('standaloneJar', Jar) {
     archiveFileName = "ChunkyAnimate-Standalone.jar"
 
     manifest {
@@ -47,13 +55,13 @@ task standaloneJar(type: Jar) {
 
     from {
         configurations.bundled.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.provided.collect{it.isDirectory() ? it : zipTree(it) }
+        configurations.provided.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
     with jar
 }
 
-task buildJar {
+tasks.register('buildJar') {
     dependsOn pluginJar
     dependsOn standaloneJar
 }

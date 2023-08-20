@@ -5,10 +5,9 @@ ChunkyAnimate is a plugin to the Minecraft path-tracer [Chunky](https://github.c
 
 ## Download
 * [Releases](https://github.com/ThatRedox/ChunkyAnimation/releases)
-* [Latest build from master (may be expired)](https://nightly.link/ThatRedox/ChunkyAnimation/workflows/master/master/ChunkyAnimatePlugin.zip)
 
 ## Installation
-### Note: The latest version requires at least Chunky `2.4.0`
+### Note: The latest version requires at least Chunky `2.5.0`
 Download the latest plugin build and extract it. In the Chunky Launcher, expand `Advanced Settings` and click on 
 `Manage plugins`. In the `Plugin Manager` window click on `Add` and select the `.jar` file in the extracted zip file. 
 Click on `Save` and start Chunky as usual.

@@ -10,23 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
-          java-version: 1.8
-          java-package: jdk+fx
+          distribution: 'temurin'
+          java-version: '17'
+          java-package: jdk
+          cache: 'gradle'
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        run: ./gradlew buildJar
+        run: ./gradlew buildJar --no-daemon
+
       - name: Upload Plugin Jar
-        uses: actions/upload-artifact@v2.2.2
+        uses: actions/upload-artifact@v3
         with:
           name: ChunkyAnimatePlugin
           path: build/libs/ChunkyAnimate.jar
       - name: Upload Standalone Jar
-        uses: actions/upload-artifact@v2.2.2
+        uses: actions/upload-artifact@v3
         with:
           name: ChunkyAnimateStandalone
           path: build/libs/ChunkyAnimate-Standalone.jar
