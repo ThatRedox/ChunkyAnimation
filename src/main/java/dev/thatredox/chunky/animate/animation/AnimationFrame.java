@@ -16,8 +16,8 @@ import java.util.OptionalDouble;
 import java.util.function.Function;
 
 public class AnimationFrame {
-    @DoubleJsonField("fog.fogDensity")
-    @DoubleSceneField("fog.fogDensity")
+    @DoubleJsonField("fog.uniformDensity")
+    @DoubleSceneField("fog.uniformDensity")
     @DoubleField("Fog density")
     public double fogDensity;
 
