@@ -3,9 +3,7 @@ name: Master
 on:
   push:
   workflow_dispatch:
-  schedule:
-    # Run once a month
-    - cron: '0 0 1 * *'
+  pull_request:
 
 jobs:
   build:
