@@ -2,7 +2,7 @@
     "name": "ChunkyAnimation",
     "author": "ThatRedox",
     "main": "dev.thatredox.chunky.animate.plugin.ChunkyAnimate",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "targetVersion": "2.4.0",
     "description": "Chunky animations."
 }
