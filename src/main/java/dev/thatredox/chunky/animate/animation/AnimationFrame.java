@@ -16,28 +16,28 @@ import java.util.OptionalDouble;
 import java.util.function.Function;
 
 public class AnimationFrame {
-    @DoubleJsonField("fogDensity")
-    @DoubleSceneField("fogDensity")
+    @DoubleJsonField("fog.uniformDensity")
+    @DoubleSceneField("fog.uniformDensity")
     @DoubleField("Fog density")
     public double fogDensity;
 
-    @DoubleJsonField("skyFogDensity")
-    @DoubleSceneField("skyFogDensity")
+    @DoubleJsonField("fog.skyFogDensity")
+    @DoubleSceneField("fog.skyFogDensity")
     @DoubleField("Sky fog blending")
     public double skyFogDensity;
 
-    @DoubleJsonField("fogColor.red")
-    @DoubleSceneField("fogColor.x")
+    @DoubleJsonField("fog.fogColor.red")
+    @DoubleSceneField("fog.fogColor.x")
     @DoubleField(value = "Fog color (R)", sortOrder = "fogColor.0")
     public double fogColorR;
 
-    @DoubleJsonField("fogColor.green")
-    @DoubleSceneField("fogColor.y")
+    @DoubleJsonField("fog.fogColor.green")
+    @DoubleSceneField("fog.fogColor.y")
     @DoubleField(value = "Fog color (G)", sortOrder = "fogColor.1")
     public double fogColorG;
 
-    @DoubleJsonField("fogColor.blue")
-    @DoubleSceneField("fogColor.z")
+    @DoubleJsonField("fog.fogColor.blue")
+    @DoubleSceneField("fog.fogColor.z")
     @DoubleField(value = "Fog color (B)", sortOrder = "fogColor.2")
     public double fogColorB;
 
@@ -250,10 +250,15 @@ public class AnimationFrame {
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {
             try {
-                Object value = field.get(this);
                 Object prevValue = field.get(prev);
+                field.set(this, prevValue);
+
+                Object value = field.get(this);
                 if (value instanceof Double && prevValue instanceof Double) {
-                    field.set(this, fieldProvider.apply(field.getName()).orElse((Double) prevValue));
+                    OptionalDouble result = fieldProvider.apply(field.getName());
+                    if (result.isPresent()) {
+                        field.set(this, result.getAsDouble());
+                    }
                 }
             } catch (IllegalAccessException e) {
                 // Ignored

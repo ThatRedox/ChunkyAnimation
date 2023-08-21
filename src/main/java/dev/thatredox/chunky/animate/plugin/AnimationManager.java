@@ -91,7 +91,7 @@ public class AnimationManager {
             return;
         }
 
-        scene.saveFrame(saveFile, TaskTracker.NONE, chunky.getRenderController().getContext().numRenderThreads());
+        scene.saveFrame(saveFile, TaskTracker.NONE);
     }
 
     public void frameComplete() {
