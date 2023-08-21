@@ -250,10 +250,15 @@ public class AnimationFrame {
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {
             try {
-                Object value = field.get(this);
                 Object prevValue = field.get(prev);
+                field.set(this, prevValue);
+
+                Object value = field.get(this);
                 if (value instanceof Double && prevValue instanceof Double) {
-                    field.set(this, fieldProvider.apply(field.getName()).orElse((Double) prevValue));
+                    OptionalDouble result = fieldProvider.apply(field.getName());
+                    if (result.isPresent()) {
+                        field.set(this, result.getAsDouble());
+                    }
                 }
             } catch (IllegalAccessException e) {
                 // Ignored
